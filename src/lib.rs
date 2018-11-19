@@ -1,4 +1,6 @@
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::bdab2ff7-59d6-4b5e-8b47-53eaccf5e64d][bdab2ff7-59d6-4b5e-8b47-53eaccf5e64d]]
+// header
+
+// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*header][header:1]]
 //===============================================================================#
 //   DESCRIPTION:  spdkit: Structure Predication Development Kit
 //
@@ -8,21 +10,34 @@
 //        AUTHOR:  Wenping Guo <ybyygu@gmail.com>
 //       LICENCE:  GPL version 2 or upper
 //       CREATED:  <2018-06-14 Thu 20:52>
-//       UPDATED:  <2018-07-04 Wed 19:28>
+//       UPDATED:  <2018-11-19 Mon 11:21>
 //===============================================================================#
-// bdab2ff7-59d6-4b5e-8b47-53eaccf5e64d ends here
+// header:1 ends here
 
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::a3722bad-c2c5-43c4-93da-1e0f01b73129][a3722bad-c2c5-43c4-93da-1e0f01b73129]]
+// base
+
+// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*base][base:1]]
 pub mod individual;
 
 extern crate gchemol;
 extern crate quicli;
 
 use gchemol::*;
+use gchemol::prelude::*;
 use quicli::prelude::*;
-// a3722bad-c2c5-43c4-93da-1e0f01b73129 ends here
+// base:1 ends here
 
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::161664b5-fbc6-48b1-afe3-58cf0b291a70][161664b5-fbc6-48b1-afe3-58cf0b291a70]]
+// plane-cut-and-splice
+// 算法:
+// 1. 输入: A分子和B分子.
+// 2. 平移A和B分子, 使其几何中心重合, 且为坐标系0点.
+// 3. 以质心以为原点, 以某一平面随机将分子切为两半.
+// 4. 将A分子和B分子切割平面以相反方向平移, 调整片断的原子数.
+// 5. 将分子A中原子数较多的片断与分子B中原子数较少的片断组合(或反之), 构成新的分子.
+// 6. 如果新分子结构与之前分子匹配, 则成功. 如果不匹配, 则重新调整切割方式.
+
+
+// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*plane-cut-and-splice][plane-cut-and-splice:1]]
 use std::collections::HashSet;
 
 use gchemol::{
@@ -110,7 +125,7 @@ pub fn plane_cut_and_splice(mol1: &Molecule, mol2: &Molecule) -> Result<Molecule
             s2.extend(s1.iter());
 
             assert_eq!(natoms, s2.len());
-            omol.set_symbols(s2);
+            omol.set_symbols(&s2);
             let mut got = true;
             for (k, v) in omol.reduced_symbols() {
                 if reduced_symbols[&k] != v {
@@ -131,7 +146,7 @@ pub fn plane_cut_and_splice(mol1: &Molecule, mol2: &Molecule) -> Result<Molecule
 
                 s2.extend(s1.iter());
 
-                omol.set_positions(s2);
+                omol.set_positions(&s2);
                 break;
             }
         }
@@ -156,4 +171,4 @@ fn test_plane_cut_splice() {
     let x = plane_cut_and_splice(&mol1, &mol2).expect("plane-cut-and-splice");
     x.to_file("/tmp/aa.xyz").expect("write splice");
 }
-// 161664b5-fbc6-48b1-afe3-58cf0b291a70 ends here
+// plane-cut-and-splice:1 ends here

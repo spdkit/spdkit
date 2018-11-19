@@ -1,11 +1,13 @@
-# [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::ffc75e20-e24a-42b9-8bc6-0ae6be1c3b1f][ffc75e20-e24a-42b9-8bc6-0ae6be1c3b1f]]
+# cargo
+
+# [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*cargo][cargo:1]]
 [package]
 name = "spdkit"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["Wenping Guo <ybyygu@gmail.com>"]
 
 [dependencies]
-#gchemol = { path = "../../gchemol" }
-gchemol = { git = "https://github.com/ybyygu/gchemol.git" }
+gchemol = { path = "../../gchemol" }
+#gchemol = { git = "https://github.com/ybyygu/gchemol.git" }
 quicli = "0.3"
-# ffc75e20-e24a-42b9-8bc6-0ae6be1c3b1f ends here
+# cargo:1 ends here
