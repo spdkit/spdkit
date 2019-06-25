@@ -10,7 +10,7 @@
 //        AUTHOR:  Wenping Guo <ybyygu@gmail.com>
 //       LICENCE:  GPL version 2 or upper
 //       CREATED:  <2018-06-14 Thu 20:52>
-//       UPDATED:  <2018-11-19 Mon 11:21>
+//       UPDATED:  <2019-08-23 Fri 09:00>
 //===============================================================================#
 // header:1 ends here
 
@@ -19,35 +19,27 @@
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*base][base:1]]
 pub mod individual;
 
-extern crate gchemol;
-extern crate quicli;
-
-use gchemol::*;
 use gchemol::prelude::*;
-use quicli::prelude::*;
+use gchemol::*;
+
+pub(crate) mod common {
+    pub use quicli::prelude::*;
+    pub type Result<T> = ::std::result::Result<T, Error>;
+}
 // base:1 ends here
 
-// plane-cut-and-splice
-// 算法:
-// 1. 输入: A分子和B分子.
-// 2. 平移A和B分子, 使其几何中心重合, 且为坐标系0点.
-// 3. 以质心以为原点, 以某一平面随机将分子切为两半.
-// 4. 将A分子和B分子切割平面以相反方向平移, 调整片断的原子数.
-// 5. 将分子A中原子数较多的片断与分子B中原子数较少的片断组合(或反之), 构成新的分子.
-// 6. 如果新分子结构与之前分子匹配, 则成功. 如果不匹配, 则重新调整切割方式.
+// src
 
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*plane-cut-and-splice][plane-cut-and-splice:1]]
+// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*src][src:1]]
 use std::collections::HashSet;
+use crate::common::*;
 
-use gchemol::{
-    io,
-    geometry::rand_rotate,
-};
+use gchemol::{geometry::rand_rotate, io};
 
 // return indices of atoms lying above the cutting plane
 fn indices_above_plane(positions: &Vec<[f64; 3]>) -> HashSet<usize> {
-    positions.iter()
+    positions
+        .iter()
         .enumerate()
         .filter(|(i, p)| p[2].is_sign_positive())
         .map(|(i, p)| i)
@@ -55,13 +47,7 @@ fn indices_above_plane(positions: &Vec<[f64; 3]>) -> HashSet<usize> {
 }
 
 // cut the molecule into two parts using a random plane
-fn cut_molecule_by_rand_plane(mol: &Molecule) ->
-    (
-        HashSet<usize>,
-        HashSet<usize>,
-        Vec<[f64; 3]>,
-    )
-{
+fn cut_molecule_by_rand_plane(mol: &Molecule) -> (HashSet<usize>, HashSet<usize>, Vec<[f64; 3]>) {
     let natoms = mol.natoms();
 
     let mut mol = mol.clone();
@@ -72,15 +58,9 @@ fn cut_molecule_by_rand_plane(mol: &Molecule) ->
 
     let ind_all: HashSet<_> = (0..natoms).collect();
     let ind_above = indices_above_plane(&rotated);
-    let ind_below = ind_all.difference(&ind_above)
-        .map(|x| *x)
-        .collect();
+    let ind_below = ind_all.difference(&ind_above).map(|x| *x).collect();
 
-    (
-        ind_above,
-        ind_below,
-        rotated,
-    )
+    (ind_above, ind_below, rotated)
 }
 
 pub fn plane_cut_and_splice(mol1: &Molecule, mol2: &Molecule) -> Result<Molecule> {
@@ -112,15 +92,9 @@ pub fn plane_cut_and_splice(mol1: &Molecule, mol2: &Molecule) -> Result<Molecule
         if above1.len() + below2.len() == natoms {
             // check if element types is correct
 
-            let s1: Vec<_> = above1
-                .iter()
-                .map(|&i| symbols[i])
-                .collect();
+            let s1: Vec<_> = above1.iter().map(|&i| symbols[i]).collect();
 
-            let mut s2: Vec<_> = below2
-                .iter()
-                .map(|&i| symbols[i])
-                .collect();
+            let mut s2: Vec<_> = below2.iter().map(|&i| symbols[i]).collect();
 
             s2.extend(s1.iter());
 
@@ -134,15 +108,9 @@ pub fn plane_cut_and_splice(mol1: &Molecule, mol2: &Molecule) -> Result<Molecule
             }
             if got {
                 // update positions
-                let s1: Vec<_> = above1
-                    .iter()
-                    .map(|&i| rotated1[i])
-                    .collect();
+                let s1: Vec<_> = above1.iter().map(|&i| rotated1[i]).collect();
 
-                let mut s2: Vec<_> = below2
-                    .iter()
-                    .map(|&i| rotated2[i])
-                    .collect();
+                let mut s2: Vec<_> = below2.iter().map(|&i| rotated2[i]).collect();
 
                 s2.extend(s1.iter());
 
@@ -171,4 +139,4 @@ fn test_plane_cut_splice() {
     let x = plane_cut_and_splice(&mol1, &mol2).expect("plane-cut-and-splice");
     x.to_file("/tmp/aa.xyz").expect("write splice");
 }
-// plane-cut-and-splice:1 ends here
+// src:1 ends here

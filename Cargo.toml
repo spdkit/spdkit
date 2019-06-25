@@ -4,10 +4,11 @@
 [package]
 name = "spdkit"
 version = "0.0.2"
+edition = "2018"
 authors = ["Wenping Guo <ybyygu@gmail.com>"]
 
 [dependencies]
-gchemol = { path = "../../gchemol" }
-#gchemol = { git = "https://github.com/ybyygu/gchemol.git" }
-quicli = "0.3"
+gchemol = { git = "https://github.com/ybyygu/gchemol.git", tag="v0.0.34" }
+#gchemol = {path = "/home/ybyygu/Workspace/Programming/gchemol-rs/gchemol/gchemol"}
+quicli = "0.4"
 # cargo:1 ends here
