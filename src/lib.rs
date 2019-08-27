@@ -10,14 +10,15 @@
 //        AUTHOR:  Wenping Guo <ybyygu@gmail.com>
 //       LICENCE:  GPL version 2 or upper
 //       CREATED:  <2018-06-14 Thu 20:52>
-//       UPDATED:  <2019-08-23 Fri 09:00>
+//       UPDATED:  <2019-08-25 Sun 16:33>
 //===============================================================================#
 // header:1 ends here
 
 // base
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*base][base:1]]
-pub mod individual;
+#[macro_use]
+extern crate lazy_static;
 
 use gchemol::prelude::*;
 use gchemol::*;
@@ -27,6 +28,19 @@ pub(crate) mod common {
     pub type Result<T> = ::std::result::Result<T, Error>;
 }
 // base:1 ends here
+
+// mods
+
+// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*mods][mods:1]]
+mod breeder;
+mod fitness;
+mod individual;
+mod population;
+mod random;
+mod selection;
+mod encoding;
+mod operator;
+// mods:1 ends here
 
 // src
 
