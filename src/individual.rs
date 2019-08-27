@@ -24,8 +24,10 @@ where
     genome: G,
 }
 
+/// Evaluate the raw score of individual.
+///
 /// Potentially expensive operation.
-pub trait Evaluate<G>
+pub trait EvaluateScore<G>
 where
     G: Genome,
 {
@@ -40,7 +42,7 @@ where
     /// score.
     pub fn new<E>(genome: G, func: &E) -> Self
     where
-        E: Evaluate<G>,
+        E: EvaluateScore<G>,
     {
         let raw_score = func.evaluate(&genome);
         Self { genome, raw_score }
@@ -60,7 +62,7 @@ where
 /// Create individual from genome.
 pub struct Creator<E, G>
 where
-    E: Evaluate<G>,
+    E: EvaluateScore<G>,
     G: Genome,
 {
     eval_func: E,
@@ -69,7 +71,7 @@ where
 
 impl<E, G> Creator<E, G>
 where
-    E: Evaluate<G>,
+    E: EvaluateScore<G>,
     G: Genome,
 {
     pub fn new(eval_func: E) -> Self {
@@ -106,7 +108,7 @@ mod test {
 
     struct OneMax;
 
-    impl Evaluate<Binary> for OneMax {
+    impl EvaluateScore<Binary> for OneMax {
         fn evaluate(&self, genome: &Binary) -> f64 {
             let s: usize = genome.iter().map(|&b| b as usize).sum();
             s as f64
@@ -115,14 +117,12 @@ mod test {
 
     #[test]
     fn test() {
-        let onemax = OneMax;
-        let creator = Creator::new(onemax);
         let keys: Vec<_> = vec!["10110", "01010"]
             .iter()
             .map(|x| Binary::from_str(x))
             .collect();
 
-        let indvs = creator.create(&keys);
+        let indvs = Creator::new(OneMax).create(&keys);
         for indv in indvs.iter() {
             println!("indv {:}, raw_score = {}", indv.genome(), indv.raw_score());
         }

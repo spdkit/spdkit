@@ -3,7 +3,7 @@
 # [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*cargo][cargo:1]]
 [package]
 name = "spdkit"
-version = "0.0.3"
+version = "0.0.4"
 edition = "2018"
 authors = ["Wenping Guo <ybyygu@gmail.com>"]
 

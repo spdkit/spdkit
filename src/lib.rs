@@ -10,7 +10,7 @@
 //        AUTHOR:  Wenping Guo <ybyygu@gmail.com>
 //       LICENCE:  GPL version 2 or upper
 //       CREATED:  <2018-06-14 Thu 20:52>
-//       UPDATED:  <2019-08-25 Sun 16:33>
+//       UPDATED:  <2019-08-27 Tue 14:19>
 //===============================================================================#
 // header:1 ends here
 
@@ -40,13 +40,14 @@ mod random;
 mod selection;
 mod encoding;
 mod operator;
+mod engine;
 // mods:1 ends here
 
 // src
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*src][src:1]]
-use std::collections::HashSet;
 use crate::common::*;
+use std::collections::HashSet;
 
 use gchemol::{geometry::rand_rotate, io};
 
@@ -76,7 +77,7 @@ fn cut_molecule_by_rand_plane(mol: &Molecule) -> (HashSet<usize>, HashSet<usize>
 
     (ind_above, ind_below, rotated)
 }
-
+#[deprecated(since = "0.0.2", note = "Will be removed soon")]
 pub fn plane_cut_and_splice(mol1: &Molecule, mol2: &Molecule) -> Result<Molecule> {
     let natoms = mol1.natoms();
     // sanity check

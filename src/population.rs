@@ -171,7 +171,7 @@ mod test {
 
     struct OneMax;
 
-    impl Evaluate<Binary> for OneMax {
+    impl EvaluateScore<Binary> for OneMax {
         fn evaluate(&self, genome: &Binary) -> f64 {
             let s: usize = genome.iter().map(|&b| b as usize).sum();
             s as f64
