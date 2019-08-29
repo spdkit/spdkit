@@ -2,6 +2,8 @@
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*imports][imports:1]]
 use std::marker::PhantomData;
+
+use crate::encoding::*;
 // imports:1 ends here
 
 // genome
@@ -10,6 +12,8 @@ use std::marker::PhantomData;
 pub trait Genome: Clone + Send {
     //
 }
+
+impl Genome for Binary {}
 // genome:1 ends here
 
 // individual
@@ -59,42 +63,54 @@ where
     }
 }
 
-/// Create individual from genome.
-pub struct Creator<E, G>
+impl<G> AsRef<Individual<G>> for Individual<G>
 where
-    E: EvaluateScore<G>,
     G: Genome,
 {
-    eval_func: E,
-    _empty: PhantomData<G>,
+    fn as_ref(&self) -> &Self {
+        self
+    }
+}
+// individual:1 ends here
+
+// create
+
+// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*create][create:1]]
+/// blanket implementation for creating new individuals from genomes
+pub trait Create<G: Genome> {
+    fn create(&self, genomes: impl IntoIterator<Item = G>) -> Vec<Individual<G>>;
 }
 
-impl<E, G> Creator<E, G>
-where
-    E: EvaluateScore<G>,
-    G: Genome,
-{
-    pub fn new(eval_func: E) -> Self {
-        Self {
-            eval_func,
-            _empty: PhantomData,
-        }
-    }
-
-    pub fn create(&self, genomes: &[G]) -> Vec<Individual<G>> {
+impl<G: Genome, T: EvaluateScore<G>> Create<G> for T {
+    /// Create individuals from genomes.
+    fn create(&self, genomes: impl IntoIterator<Item = G>) -> Vec<Individual<G>> {
         genomes
-            .iter()
+            .into_iter()
             .map(|g| {
-                let raw_score = self.eval_func.evaluate(g);
+                let raw_score = self.evaluate(&g);
                 Individual {
-                    genome: g.clone(),
+                    genome: g,
                     raw_score,
                 }
             })
             .collect()
     }
 }
-// individual:1 ends here
+// create:1 ends here
+
+// onemax
+// for test purpose
+
+// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*onemax][onemax:1]]
+pub struct OneMax;
+
+impl EvaluateScore<Binary> for OneMax {
+    fn evaluate(&self, genome: &Binary) -> f64 {
+        let s: usize = genome.iter().filter(|&b| *b).count();
+        s as f64
+    }
+}
+// onemax:1 ends here
 
 // test
 
@@ -104,25 +120,14 @@ mod test {
     use super::*;
     use crate::encoding::Binary;
 
-    impl Genome for Binary {}
-
-    struct OneMax;
-
-    impl EvaluateScore<Binary> for OneMax {
-        fn evaluate(&self, genome: &Binary) -> f64 {
-            let s: usize = genome.iter().map(|&b| b as usize).sum();
-            s as f64
-        }
-    }
-
     #[test]
     fn test() {
-        let keys: Vec<_> = vec!["10110", "01010"]
+        let codes: Vec<_> = vec!["10110", "01010"]
             .iter()
             .map(|x| Binary::from_str(x))
             .collect();
 
-        let indvs = Creator::new(OneMax).create(&keys);
+        let indvs = OneMax.create(codes);
         for indv in indvs.iter() {
             println!("indv {:}, raw_score = {}", indv.genome(), indv.raw_score());
         }

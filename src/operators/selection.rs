@@ -5,29 +5,15 @@ use crate::common::*;
 use crate::individual::*;
 use crate::population::*;
 use crate::random::*;
+
+use super::*;
 // imports:1 ends here
-
-// base
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*base][base:1]]
-/// Selection Operator
-pub trait SelectionOperator<'a> {
-    /// Select individuals from population.
-    fn select_from<G, R>(
-        &self,
-        population: &'a Population<G>,
-        rng: &mut R,
-    ) -> Vec<&'a Individual<G>>
-    where
-        G: Genome,
-        R: Rng + Sized;
-}
-// base:1 ends here
 
 // random selection
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*random%20selection][random selection:1]]
 /// Select individuals from population at random.
+#[derive(Debug)]
 pub struct RandomSelection {
     n: usize,
     allow_repetition: bool,
@@ -66,9 +52,10 @@ impl<'a> SelectionOperator<'a> for RandomSelection {
 // elitist selection
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*elitist%20selection][elitist selection:1]]
-/// ElitistSelection is a selection strategy where a limited number of
+/// ElitistSelection is a simple selection strategy where a limited number of
 /// individuals with the best fitness values are chosen.
-pub struct ElitistSelection(usize);
+#[derive(Debug)]
+pub struct ElitistSelection(pub usize);
 
 impl<'a> SelectionOperator<'a> for ElitistSelection {
     fn select_from<G, R>(
@@ -97,6 +84,7 @@ impl<'a> SelectionOperator<'a> for ElitistSelection {
 /// # Reference
 ///
 /// https://en.wikipedia.org/wiki/Fitness_proportionate_selection
+#[derive(Debug)]
 pub struct RouletteWheelSelection {
     // Select `n` individuals
     n: usize,
@@ -120,7 +108,7 @@ impl<'a> SelectionOperator<'a> for RouletteWheelSelection {
         if self.allow_repetition {
             for _ in 0..self.n {
                 let (_, m) = choices
-                    .choose_weighted(rng, |(_, m)| *m.fitness)
+                    .choose_weighted(rng, |(_, m)| m.fitness)
                     .unwrap_or_else(|e| panic!("Weighted selection failed: {:?}", e));
                 selected.push(m.individual);
             }
@@ -130,7 +118,7 @@ impl<'a> SelectionOperator<'a> for RouletteWheelSelection {
                 // https://github.com/rust-lang/rust/issues/59159
                 let i = {
                     let (i, m) = choices
-                        .choose_weighted(rng, |(_, m)| *m.fitness)
+                        .choose_weighted(rng, |(_, m)| m.fitness)
                         .unwrap_or_else(|e| panic!("Weighted selection failed: {:?}", e));
                     selected.push(m.individual);
                     *i
@@ -152,6 +140,7 @@ impl<'a> SelectionOperator<'a> for RouletteWheelSelection {
 ///
 /// This implementation is a little bit different from the one described in the
 /// wikipedia article
+#[derive(Debug)]
 pub struct TournamentSelection {
     n: usize,
 }

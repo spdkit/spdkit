@@ -38,7 +38,18 @@ impl std::ops::Deref for Binary {
     }
 }
 
+impl std::ops::DerefMut for Binary {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
 impl Binary {
+    /// Construct from a list of bool.
+    pub fn new(list: Vec<bool>) -> Self {
+        Self(list)
+    }
+
     /// Convert from binary string representation, e.g. "110"
     pub fn from_str(s: &str) -> Self {
         Self::from_iter(s.chars().map(|c| match c {
@@ -46,6 +57,13 @@ impl Binary {
             '0' => false,
             _ => panic!("bad char: {}", c),
         }))
+    }
+
+    /// Flip the bits in specified `positions`.
+    pub fn flip(&mut self, positions: impl Iterator<Item = usize>) {
+        for i in positions {
+            self.0[i] = !self.0[i];
+        }
     }
 }
 // base:1 ends here

@@ -10,7 +10,7 @@
 //        AUTHOR:  Wenping Guo <ybyygu@gmail.com>
 //       LICENCE:  GPL version 2 or upper
 //       CREATED:  <2018-06-14 Thu 20:52>
-//       UPDATED:  <2019-08-27 Tue 14:19>
+//       UPDATED:  <2019-08-29 Thu 16:12>
 //===============================================================================#
 // header:1 ends here
 
@@ -32,15 +32,16 @@ pub(crate) mod common {
 // mods
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*mods][mods:1]]
-mod breeder;
-mod fitness;
-mod individual;
-mod population;
-mod random;
-mod selection;
+#[macro_use]
+mod random; // the mod order is important for get_rng! macro
+
 mod encoding;
-mod operator;
 mod engine;
+mod fitness;
+mod gears;
+mod individual;
+mod operators;
+mod population;
 // mods:1 ends here
 
 // src
@@ -77,6 +78,7 @@ fn cut_molecule_by_rand_plane(mol: &Molecule) -> (HashSet<usize>, HashSet<usize>
 
     (ind_above, ind_below, rotated)
 }
+
 #[deprecated(since = "0.0.2", note = "Will be removed soon")]
 pub fn plane_cut_and_splice(mol1: &Molecule, mol2: &Molecule) -> Result<Molecule> {
     let natoms = mol1.natoms();

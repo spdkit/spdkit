@@ -30,29 +30,6 @@ impl<G> Population<G>
 where
     G: Genome,
 {
-    /// Re-evaluate individuals in population with `fitness` function.
-    pub fn evaluate_with<F: EvaluateFitness<G>>(&mut self, fitness: F) {
-        self.fitness_values = evaluate_individuals(&self.individuals, &fitness);
-    }
-
-    /// Re-evaluate individual fitness with weight.
-    pub fn weight_with(&mut self, weight: f64) {
-        for fitness in self.fitness_values.iter_mut() {
-            *fitness *= weight;
-        }
-    }
-
-    /// Return a member view of individuals with associated fitness values.
-    pub fn members(&self) -> impl Iterator<Item = Member<G>> {
-        self.individuals
-            .iter()
-            .zip(self.fitness_values.iter())
-            .map(|(individual, fitness)| Member {
-                individual,
-                fitness,
-            })
-    }
-
     /// Return a list of individuals in this population.
     pub fn individuals(&self) -> &[Individual<G>] {
         &self.individuals
@@ -73,43 +50,15 @@ where
         self.size_limit
     }
 
-    /// Return true of there are too many individuals in this population.
-    pub fn is_oversized(&self) -> bool {
-        self.size() > self.size_limit
-    }
-}
-
-/// Population builder.
-pub struct Builder<G, F>
-where
-    G: Genome,
-    F: EvaluateFitness<G>,
-{
-    fitness: F,
-    _empty: PhantomData<G>,
-}
-
-impl<G, F> Builder<G, F>
-where
-    G: Genome,
-    F: EvaluateFitness<G>,
-{
-    /// Construct a population builder with a fitness function.
-    pub fn new(fitness: F) -> Self {
-        Self {
-            fitness,
-            _empty: PhantomData,
-        }
+    /// Re-evaluate individuals in population with `fitness` function.
+    pub fn evaluate_with<F: EvaluateFitness<G>>(&mut self, fitness: F) {
+        self.fitness_values = evaluate_individuals(&self.individuals, &fitness);
     }
 
-    /// Build a population from a group of individuals.
-    pub fn build(&self, indvs: Vec<Individual<G>>) -> Population<G> {
-        let fitness_values = evaluate_individuals(&indvs, &self.fitness);
-
-        Population {
-            individuals: indvs,
-            size_limit: 10,
-            fitness_values,
+    /// Re-evaluate individual fitness with individual weight.
+    pub fn weight_with(&mut self, weight: f64) {
+        for fitness in self.fitness_values.iter_mut() {
+            *fitness *= weight;
         }
     }
 }
@@ -130,17 +79,65 @@ where
 }
 // base:1 ends here
 
-// member view
+// builder
+
+// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*builder][builder:1]]
+/// Population builder.
+pub struct Builder<G, F>
+where
+    G: Genome,
+    F: EvaluateFitness<G>,
+{
+    fitness: F,
+    size_limit: usize,
+    _empty: PhantomData<G>,
+}
+
+impl<G, F> Builder<G, F>
+where
+    G: Genome,
+    F: EvaluateFitness<G>,
+{
+    /// Construct a population builder with a fitness function.
+    pub fn new(fitness: F) -> Self {
+        Self {
+            fitness,
+            size_limit: 10,
+            _empty: PhantomData,
+        }
+    }
+
+    /// Constraint population size.
+    pub fn size_limit(mut self, n: usize) -> Self {
+        self.size_limit = n;
+        self
+    }
+
+    /// Build a population from a group of individuals.
+    pub fn build(&self, indvs: Vec<Individual<G>>) -> Population<G> {
+        let fitness_values = evaluate_individuals(&indvs, &self.fitness);
+
+        Population {
+            individuals: indvs,
+            fitness_values,
+            size_limit: self.size_limit,
+        }
+    }
+}
+// builder:1 ends here
+
+// members
 // sort members in the order of best fitness first.
 
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*member%20view][member view:1]]
+// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*members][members:1]]
 /// A member is a view of individual with its fitness in parent Population.
+#[derive(Debug)]
 pub struct Member<'a, G>
 where
     G: Genome,
 {
     pub individual: &'a Individual<G>,
-    pub fitness: &'a f64,
+    pub fitness: f64,
 }
 
 pub trait SortMember {
@@ -155,11 +152,103 @@ where
         self.sort_by(|mi, mj| {
             let (fi, fj) = (mi.fitness, mj.fitness);
             // ignore NaN items
-            fj.partial_cmp(fi).unwrap_or(std::cmp::Ordering::Less)
+            fj.partial_cmp(&fi).unwrap_or(std::cmp::Ordering::Less)
         });
     }
 }
-// member view:1 ends here
+
+/// Nice output for the Genome implemeting Display trait.
+impl<'a, G> std::fmt::Display for Member<'a, G>
+where
+    G: Genome + std::fmt::Display,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "indv {}, raw_score: {}, fitness = {}",
+            self.individual.genome(),
+            self.individual.raw_score(),
+            self.fitness
+        )
+    }
+}
+
+impl<G> Population<G>
+where
+    G: Genome,
+{
+    /// Return a member view of individuals with associated fitness values.
+    pub fn members(&self) -> impl Iterator<Item = Member<G>> {
+        self.individuals
+            .iter()
+            .zip(self.fitness_values.iter())
+            .map(|(individual, &fitness)| Member {
+                individual,
+                fitness,
+            })
+    }
+
+    /// Return a member view of the best individual in this population.
+    pub fn best_member(&self) -> Option<Member<G>> {
+        self.individuals
+            .iter()
+            .zip(self.fitness_values.iter())
+            .max_by(|a, b| {
+                let (fa, fb) = (a.1, b.1);
+                fa.partial_cmp(fb).unwrap_or(std::cmp::Ordering::Less)
+            })
+            .and_then(|(individual, &fitness)| {
+                let m = Member {
+                    individual,
+                    fitness,
+                };
+                Some(m)
+            })
+    }
+}
+// members:1 ends here
+
+// survive
+
+// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*survive][survive:1]]
+impl<G> Population<G>
+where
+    G: Genome,
+{
+    /// Remove some bad performing individuals to fit the population size limit
+    /// constrain.
+    ///
+    /// # Returns
+    ///
+    /// * return the number of individuals to be removed.
+    ///
+    pub fn survive(&mut self) -> usize {
+        if self.is_oversized() {
+            let n_remove = self.size() - self.size_limit;
+            let mut members: Vec<_> = self.members().collect();
+            members.sort_by_fitness();
+
+            let mut indvs = vec![];
+            let mut values = vec![];
+            for m in members.into_iter().take(self.size_limit) {
+                indvs.push(m.individual.to_owned());
+                values.push(m.fitness);
+            }
+
+            self.individuals = indvs;
+            self.fitness_values = values;
+            n_remove
+        } else {
+            0
+        }
+    }
+
+    /// Return true of there are too many individuals in this population.
+    pub fn is_oversized(&self) -> bool {
+        self.size() > self.size_limit
+    }
+}
+// survive:1 ends here
 
 // test
 
@@ -168,15 +257,6 @@ where
 mod test {
     use super::*;
     use crate::encoding::Binary;
-
-    struct OneMax;
-
-    impl EvaluateScore<Binary> for OneMax {
-        fn evaluate(&self, genome: &Binary) -> f64 {
-            let s: usize = genome.iter().map(|&b| b as usize).sum();
-            s as f64
-        }
-    }
 
     struct FitnessMax;
 
@@ -188,26 +268,26 @@ mod test {
 
     #[test]
     fn test() {
-        let onemax = OneMax;
-        let creator = crate::individual::Creator::new(onemax);
         let keys: Vec<_> = vec!["10110", "01010", "11011"]
             .iter()
             .map(|x| Binary::from_str(x))
             .collect();
 
-        let indvs = creator.create(&keys);
-        let pop = crate::population::Builder::new(FitnessMax).build(indvs);
+        let indvs = crate::individual::OneMax.create(keys);
+        let pop = crate::population::Builder::new(FitnessMax)
+            .size_limit(10)
+            .build(indvs);
+        assert!(!pop.is_oversized());
+
         let mut members: Vec<_> = pop.members().collect();
         members.sort_by_fitness();
 
         for m in members.iter() {
-            println!(
-                "indv {}, raw_score: {}, fitness = {}",
-                m.individual.genome(),
-                m.individual.raw_score(),
-                m.fitness
-            );
+            //
         }
+
+        let m = pop.best_member().unwrap();
+        assert_eq!(m.fitness, 4.0);
     }
 }
 // test:1 ends here

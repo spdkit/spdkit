@@ -24,7 +24,7 @@ fn get_rng_with_seed(seed: Option<u64>) -> StdRng {
 }
 
 lazy_static! {
-    static ref RNG: Mutex<StdRng> = {
+    pub static ref RNG: Mutex<StdRng> = {
         let mut r = get_rng_with_seed(None);
         Mutex::new(r)
     };
