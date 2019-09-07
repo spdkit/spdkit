@@ -19,32 +19,42 @@ pub struct RandomSelection {
     allow_repetition: bool,
 }
 
+impl RandomSelection {
+    /// Select individuals randomly from `population`.
+    fn select<'a, G, R>(&self, population: &'a Population<G>, rng: &mut R) -> Vec<Member<'a, G>>
+    where
+        G: Genome,
+        R: Rng + Sized,
+    {
+        let all_members: Vec<_> = population.members().collect();
+        if self.allow_repetition {
+            let mut selected = vec![];
+            for _ in 0..self.n {
+                let member = all_members
+                    .choose(rng)
+                    .expect("cannot select from empty slice");
+                selected.push(member.clone());
+            }
+
+            selected
+        } else {
+            all_members.choose_multiple(rng, self.n).cloned().collect()
+        }
+    }
+}
+
 impl<'a> SelectionOperator<'a> for RandomSelection {
     /// Select individuals randomly from `population`.
     fn select_from<G, R>(
         &self,
         population: &'a Population<G>,
         rng: &mut R,
-    ) -> Vec<&'a Individual<G>>
+    ) -> Vec<Member<'a, G>>
     where
         G: Genome,
         R: Rng + Sized,
     {
-        let individuals = population.individuals();
-
-        if self.allow_repetition {
-            let mut selected = vec![];
-            for _ in 0..self.n {
-                let chosen = individuals
-                    .choose(rng)
-                    .expect("cannot select from empty slice");
-                selected.push(chosen);
-            }
-
-            selected
-        } else {
-            individuals.choose_multiple(rng, self.n).collect()
-        }
+        self.select(population, rng)
     }
 }
 // random selection:1 ends here
@@ -57,21 +67,26 @@ impl<'a> SelectionOperator<'a> for RandomSelection {
 #[derive(Debug)]
 pub struct ElitistSelection(pub usize);
 
-impl<'a> SelectionOperator<'a> for ElitistSelection {
-    fn select_from<G, R>(
-        &self,
-        population: &'a Population<G>,
-        _rng: &mut R,
-    ) -> Vec<&'a Individual<G>>
+impl ElitistSelection {
+    /// Select `n` best members from `population`.
+    fn select<'a, G>(&self, population: &'a Population<G>) -> Vec<Member<'a, G>>
     where
         G: Genome,
-        R: Rng + Sized,
     {
         // Reversely sort members by fitnesses.
         let mut members: Vec<_> = population.members().collect();
         members.sort_by_fitness();
+        members[..self.0].to_vec()
+    }
+}
 
-        members[..self.0].iter().map(|m| m.individual).collect()
+impl<'a> SelectionOperator<'a> for ElitistSelection {
+    fn select_from<G, R>(&self, population: &'a Population<G>, _rng: &mut R) -> Vec<Member<'a, G>>
+    where
+        G: Genome,
+        R: Rng + Sized,
+    {
+        self.select(population)
     }
 }
 // elitist selection:1 ends here
@@ -92,12 +107,8 @@ pub struct RouletteWheelSelection {
     allow_repetition: bool,
 }
 
-impl<'a> SelectionOperator<'a> for RouletteWheelSelection {
-    fn select_from<G, R>(
-        &self,
-        population: &'a Population<G>,
-        rng: &mut R,
-    ) -> Vec<&'a Individual<G>>
+impl RouletteWheelSelection {
+    fn select<'a, G, R>(&self, population: &'a Population<G>, rng: &mut R) -> Vec<Member<'a, G>>
     where
         G: Genome,
         R: Rng + Sized,
@@ -110,7 +121,7 @@ impl<'a> SelectionOperator<'a> for RouletteWheelSelection {
                 let (_, m) = choices
                     .choose_weighted(rng, |(_, m)| m.fitness)
                     .unwrap_or_else(|e| panic!("Weighted selection failed: {:?}", e));
-                selected.push(m.individual);
+                selected.push(m.clone());
             }
         } else {
             for _ in 0..self.n {
@@ -120,7 +131,7 @@ impl<'a> SelectionOperator<'a> for RouletteWheelSelection {
                     let (i, m) = choices
                         .choose_weighted(rng, |(_, m)| m.fitness)
                         .unwrap_or_else(|e| panic!("Weighted selection failed: {:?}", e));
-                    selected.push(m.individual);
+                    selected.push(m.clone());
                     *i
                 };
                 choices.remove(i);
@@ -128,6 +139,20 @@ impl<'a> SelectionOperator<'a> for RouletteWheelSelection {
         }
 
         selected
+    }
+}
+
+impl<'a> SelectionOperator<'a> for RouletteWheelSelection {
+    fn select_from<G, R>(
+        &self,
+        population: &'a Population<G>,
+        rng: &mut R,
+    ) -> Vec<Member<'a, G>>
+    where
+        G: Genome,
+        R: Rng + Sized,
+    {
+        self.select(population, rng)
     }
 }
 // roulette wheel:1 ends here
@@ -144,19 +169,15 @@ impl<'a> SelectionOperator<'a> for RouletteWheelSelection {
 pub struct TournamentSelection {
     n: usize,
 }
-
-impl<'a> SelectionOperator<'a> for TournamentSelection {
-    fn select_from<G, R>(
-        &self,
-        population: &'a Population<G>,
-        rng: &mut R,
-    ) -> Vec<&'a Individual<G>>
+impl TournamentSelection {
+    fn select<'a, G, R>(&self, population: &'a Population<G>, rng: &mut R) -> Vec<Member<'a, G>>
     where
         G: Genome,
         R: Rng + Sized,
     {
         let psize = population.size();
         assert!(psize >= self.n, "select too many individuals!");
+
         let tsize = (psize as f64 / self.n as f64).floor() as usize;
 
         let mut members: Vec<_> = population.members().collect();
@@ -167,9 +188,19 @@ impl<'a> SelectionOperator<'a> for TournamentSelection {
             .map(|mut part| {
                 // sort members by individual fitness
                 part.sort_by_fitness();
-                part[0].individual
+                part[0].clone()
             })
             .collect()
+    }
+}
+
+impl<'a> SelectionOperator<'a> for TournamentSelection {
+    fn select_from<G, R>(&self, population: &'a Population<G>, rng: &mut R) -> Vec<Member<'a, G>>
+    where
+        G: Genome,
+        R: Rng + Sized,
+    {
+        self.select(population, rng)
     }
 }
 // tournament selection:1 ends here

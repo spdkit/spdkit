@@ -3,6 +3,7 @@
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*imports][imports:1]]
 use std::marker::PhantomData;
 
+use crate::common::*;
 use crate::fitness::*;
 use crate::individual::*;
 // imports:1 ends here
@@ -131,7 +132,7 @@ where
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*members][members:1]]
 /// A member is a view of individual with its fitness in parent Population.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Member<'a, G>
 where
     G: Genome,
@@ -151,8 +152,8 @@ where
     fn sort_by_fitness(&mut self) {
         self.sort_by(|mi, mj| {
             let (fi, fj) = (mi.fitness, mj.fitness);
-            // ignore NaN items
-            fj.partial_cmp(&fi).unwrap_or(std::cmp::Ordering::Less)
+            // puts NANs at the end
+            float_ordering_maximize(&fi, &fj)
         });
     }
 }
@@ -190,20 +191,13 @@ where
 
     /// Return a member view of the best individual in this population.
     pub fn best_member(&self) -> Option<Member<G>> {
-        self.individuals
-            .iter()
-            .zip(self.fitness_values.iter())
-            .max_by(|a, b| {
-                let (fa, fb) = (a.1, b.1);
-                fa.partial_cmp(fb).unwrap_or(std::cmp::Ordering::Less)
-            })
-            .and_then(|(individual, &fitness)| {
-                let m = Member {
-                    individual,
-                    fitness,
-                };
-                Some(m)
-            })
+        self.fitness_values.iter().imax().and_then(|(i, fitness)| {
+            let best = Member {
+                individual: &self.individuals[i],
+                fitness,
+            };
+            Some(best)
+        })
     }
 }
 // members:1 ends here
@@ -258,14 +252,6 @@ mod test {
     use super::*;
     use crate::encoding::Binary;
 
-    struct FitnessMax;
-
-    impl EvaluateFitness<Binary> for FitnessMax {
-        fn evaluate(&self, indvs: &[Individual<Binary>]) -> Vec<f64> {
-            indvs.iter().map(|x| x.raw_score()).collect()
-        }
-    }
-
     #[test]
     fn test() {
         let keys: Vec<_> = vec!["10110", "01010", "11011"]
@@ -274,7 +260,7 @@ mod test {
             .collect();
 
         let indvs = crate::individual::OneMax.create(keys);
-        let pop = crate::population::Builder::new(FitnessMax)
+        let pop = crate::population::Builder::new(crate::fitness::Maximize)
             .size_limit(10)
             .build(indvs);
         assert!(!pop.is_oversized());
@@ -287,7 +273,7 @@ mod test {
         }
 
         let m = pop.best_member().unwrap();
-        assert_eq!(m.fitness, 4.0);
+        assert_eq!(m.individual.genome().to_string(), "11011");
     }
 }
 // test:1 ends here

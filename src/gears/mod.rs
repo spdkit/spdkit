@@ -7,12 +7,17 @@
 use crate::individual::*;
 use crate::population::*;
 
-/// Elemental gear in evolution engine
-pub trait Gear {
+/// Elemental gear for evolution engine
+pub trait Gear<G>
+where
+    G: Genome,
+{
     /// select members from external population
-    fn select<G: Genome>(&self, indvs: &Population<G>);
+    fn select(&mut self, indvs: &Population<G>);
 
     /// work on internal population
-    fn work();
+    fn forward(&mut self);
 }
+
+pub mod breeder;
 // mod.rs:1 ends here

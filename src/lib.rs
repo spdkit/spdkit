@@ -6,11 +6,11 @@
 //
 //       OPTIONS:  ---
 //  REQUIREMENTS:  ---
-//         NOTES:  rewrite my python package using rust
+//         NOTES:  rewrite my python codes using rust
 //        AUTHOR:  Wenping Guo <ybyygu@gmail.com>
 //       LICENCE:  GPL version 2 or upper
 //       CREATED:  <2018-06-14 Thu 20:52>
-//       UPDATED:  <2019-08-29 Thu 16:12>
+//       UPDATED:  <2019-09-07 Sat 19:12>
 //===============================================================================#
 // header:1 ends here
 
@@ -26,6 +26,132 @@ use gchemol::*;
 pub(crate) mod common {
     pub use quicli::prelude::*;
     pub type Result<T> = ::std::result::Result<T, Error>;
+
+    // Arbitrarily decide the order of NaNs
+    macro_rules! local_float_cmp {
+        ($fi:ident, $fj:ident) => {
+            match ($fi.is_nan(), $fj.is_nan()) {
+                (true, false) => std::cmp::Ordering::Greater,
+                (false, true) => std::cmp::Ordering::Less,
+                (true, true) => std::cmp::Ordering::Equal,
+                (false, false) => unreachable!(),
+            }
+        };
+    }
+
+    // https://stackoverflow.com/questions/43921436/extend-iterator-with-a-mean-method
+    pub trait FloatIteratorExt {
+        fn fmax(mut self) -> Option<f64>;
+        fn fmin(mut self) -> Option<f64>;
+        fn imax(mut self) -> Option<(usize, f64)>;
+        fn imin(mut self) -> Option<(usize, f64)>;
+    }
+
+    impl<F, T> FloatIteratorExt for T
+    where
+        T: Iterator<Item = F>,
+        F: std::borrow::Borrow<f64>,
+    {
+        /// Returns the minimum element of an iterator. Return None if the
+        /// iterator is empty.
+        fn fmax(mut self) -> Option<f64> {
+            if let Some(value) = self.next() {
+                let f = self.fold(*value.borrow(), |a, b| a.max(*b.borrow()));
+                Some(f)
+            } else {
+                None
+            }
+        }
+
+        fn fmin(mut self) -> Option<f64> {
+            if let Some(value) = self.next() {
+                let f = self.fold(*value.borrow(), |a, b| a.min(*b.borrow()));
+                Some(f)
+            } else {
+                None
+            }
+        }
+
+        /// Find maximum value and the corresponding index. Return None if the
+        /// iterator is empty.
+        fn imax(mut self) -> Option<(usize, f64)> {
+            if let Some(value) = self.next() {
+                let value = *value.borrow();
+                let value = (1..).zip(self).fold((0, value), |a, b| {
+                    let (ia, fa) = a;
+                    let (ib, fb) = b;
+                    let fb = *fb.borrow();
+
+                    if fb > fa {
+                        (ib, fb)
+                    } else {
+                        (ia, fa)
+                    }
+                });
+                Some(value)
+            } else {
+                None
+            }
+        }
+
+        /// Find minimum value and the corresponding index. Return None if the
+        /// iterator is empty.
+        fn imin(mut self) -> Option<(usize, f64)> {
+            if let Some(value) = self.next() {
+                let value = *value.borrow();
+                let value = (1..).zip(self).fold((0, value), |a, b| {
+                    let (ia, fa) = a;
+                    let (ib, fb) = b;
+                    let fb = *fb.borrow();
+
+                    if fb < fa {
+                        (ib, fb)
+                    } else {
+                        (ia, fa)
+                    }
+                });
+                Some(value)
+            } else {
+                None
+            }
+        }
+    }
+
+    /// For sort values in maximum first order.
+    pub fn float_ordering_maximize(fi: &f64, fj: &f64) -> std::cmp::Ordering {
+        fj.partial_cmp(&fi)
+            .unwrap_or_else(|| local_float_cmp!(fi, fj))
+    }
+
+    /// For sort values in minimum first order.
+    pub fn float_ordering_minimize(fi: &f64, fj: &f64) -> std::cmp::Ordering {
+        fi.partial_cmp(&fj)
+            .unwrap_or_else(|| local_float_cmp!(fi, fj))
+    }
+
+    #[test]
+    fn test_float_ordering() {
+        let mut values = vec![1.0, -1.0, std::f64::NAN, 0.5, 2.0];
+        let m = values.iter().fmax();
+        assert_eq!(m, Some(2.0));
+
+        let m = values.iter().fmin();
+        assert_eq!(m, Some(-1.0));
+
+        let m = values.iter().imax();
+        assert_eq!(m, Some((4, 2.0)));
+
+        let m = values.iter().imin();
+        assert_eq!(m, Some((1, -1.0)));
+
+        values.sort_by(|a, b| float_ordering_maximize(&a, &b));
+        assert_eq!(values[0], 2.0);
+        assert!(values[4].is_nan());
+
+        values.sort_by(|a, b| float_ordering_minimize(&a, &b));
+        assert_eq!(values[0], -1.0);
+        assert!(values[4].is_nan());
+    }
 }
 // base:1 ends here
 
@@ -42,6 +168,7 @@ mod gears;
 mod individual;
 mod operators;
 mod population;
+mod termination;
 // mods:1 ends here
 
 // src

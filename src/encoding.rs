@@ -60,8 +60,8 @@ impl Binary {
     }
 
     /// Flip the bits in specified `positions`.
-    pub fn flip(&mut self, positions: impl Iterator<Item = usize>) {
-        for i in positions {
+    pub fn flip(&mut self, positions: impl IntoIterator<Item = usize>) {
+        for i in positions.into_iter() {
             self.0[i] = !self.0[i];
         }
     }
@@ -74,8 +74,14 @@ impl Binary {
 #[test]
 fn test_binary() {
     let x = Binary(vec![true, false, true]);
-    let s = format!("{}", x);
+    let s = x.to_string();
+    assert_eq!(s, "101");
     let y = Binary::from_str(&s);
     assert_eq!(x, y);
+
+    let mut y = y.clone();
+    y.flip(vec![0]);
+
+    assert_eq!(y.to_string(), "001");
 }
 // test:1 ends here

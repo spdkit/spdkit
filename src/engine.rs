@@ -1,47 +1,21 @@
 // imports
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*imports][imports:1]]
+use std::iter::FromIterator;
+
 use crate::common::*;
-use crate::individual::*;
+use crate::encoding::Binary;
 use crate::fitness::*;
+use crate::individual::*;
+use crate::operators::*;
 use crate::population::*;
+use crate::random::*;
+use crate::termination::*;
 // imports:1 ends here
-
-// base
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*base][base:1]]
-/// Represents a simulation step during evolution.
-#[derive(Debug)]
-pub struct Generation<G>
-where
-    G: Genome,
-{
-    igeneration: usize,
-    population: Population<G>,
-}
-
-impl<G> Generation<G>
-where
-    G: Genome + std::fmt::Display,
-{
-    pub fn summary(&self) {
-        println!("# generation: {}", self.igeneration);
-
-        for m in self.population.members() {
-            println!(" {:}", m);
-        }
-    }
-}
-// base:1 ends here
 
 // engine
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*engine][engine:1]]
-use crate::encoding::Binary;
-use crate::operators::*;
-use crate::random::*;
-use std::iter::FromIterator;
-
 /// Evolution engine.
 pub struct Engine {
     population_size_limit: usize,
@@ -55,15 +29,13 @@ impl Default for Engine {
     }
 }
 
-struct FitnessMax;
-
-impl EvaluateFitness<Binary> for FitnessMax {
-    fn evaluate(&self, indvs: &[Individual<Binary>]) -> Vec<f64> {
-        indvs.iter().map(|x| x.raw_score()).collect()
-    }
-}
-
 impl Engine {
+    /// Evolves one step forward.
+    ///
+    /// # Returns
+    ///
+    /// * return an iterator over `Generation`.
+    ///
     pub fn evolve(&mut self) -> impl Iterator<Item = Result<Generation<Binary>>> {
         let n_limit = self.population_size_limit;
         let mut cur_population = build_initial_population(n_limit);
@@ -84,11 +56,13 @@ impl Engine {
                 cur_population.clone()
             } else {
                 // 1. breed new individuals from old population
-                let indvs = selector.select_from(&cur_population, &mut *rng);
-                println!("Selected {} individuals", indvs.len());
-                let new_genomes = crossover.breed(&indvs, &mut *rng);
+                let parents = selector.select_from(&cur_population, &mut *rng);
+                println!("Selected {} members as parents", parents.len());
+                let new_genomes = crossover.breed_from(&parents, &mut *rng);
                 let mut new_indvs = OneMax.create(new_genomes);
                 println!("bred {} new individuals", new_indvs.len());
+                // breeder.select(&cur_population, &mut *rng);
+                // breeder.work();
 
                 // 2. create new population by supplanting bad performing individuals
 
@@ -97,7 +71,7 @@ impl Engine {
                 new_indvs.extend_from_slice(old_indvs);
 
                 // 2.2 create a new population from combined new individuals
-                let mut new_population = crate::population::Builder::new(FitnessMax)
+                let mut new_population = crate::population::Builder::new(Maximize)
                     .size_limit(n_limit)
                     .build(new_indvs);
 
@@ -111,7 +85,7 @@ impl Engine {
             };
 
             let g = Generation {
-                igeneration: ig,
+                index: ig,
                 population: new_population,
             };
 
@@ -119,6 +93,28 @@ impl Engine {
 
             Some(Ok(g))
         })
+    }
+
+    /// Run the simulation until termination conditions met.
+    ///
+    /// # Returns
+    ///
+    /// * return the final `Generation`.
+    ///
+    pub fn run_until<T: Terminate>(
+        &mut self,
+        conditions: impl IntoIterator<Item = T>,
+    ) -> Result<Generation<Binary>> {
+        let mut conditions: Vec<_> = conditions.into_iter().collect();
+        for g in self.evolve() {
+            let generation = g?;
+            for t in conditions.iter_mut() {
+                if t.meets(&generation) {
+                    return Ok(generation);
+                }
+            }
+        }
+        unreachable!()
     }
 }
 
@@ -129,7 +125,7 @@ fn build_initial_population(n: usize) -> Population<Binary> {
 
     let indvs = crate::individual::OneMax.create(keys);
 
-    crate::population::Builder::new(FitnessMax).build(indvs)
+    crate::population::Builder::new(Maximize).build(indvs)
 }
 
 fn random_binary(length: usize) -> Binary {

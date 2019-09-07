@@ -14,12 +14,8 @@ impl<T: std::fmt::Debug> GeneticOperator for T {}
 
 /// For selecting individuals from population.
 pub trait SelectionOperator<'a>: GeneticOperator {
-    /// Select individuals from population.
-    fn select_from<G, R>(
-        &self,
-        population: &'a Population<G>,
-        rng: &mut R,
-    ) -> Vec<&'a Individual<G>>
+    /// Select some members from population.
+    fn select_from<G, R>(&self, population: &'a Population<G>, rng: &mut R) -> Vec<Member<'a, G>>
     where
         G: Genome,
         R: Rng + Sized;
@@ -37,13 +33,13 @@ pub trait ReplacementOperator: GeneticOperator {
 }
 
 /// For producing new individuals.
-pub trait VariationOperator<G, R>: GeneticOperator
+pub trait VariationOperator<'a, G, R>: GeneticOperator
 where
     G: Genome,
     R: Rng + Sized,
 {
     /// Create genomes for new individuals from the selected.
-    fn breed<T: AsRef<Individual<G>>>(&self, indvs: &[T], rng: &mut R) -> Vec<G>;
+    fn breed_from(&self, parents: &[Member<'a, G>], rng: &mut R) -> Vec<G>;
 }
 
 pub mod replacement;
