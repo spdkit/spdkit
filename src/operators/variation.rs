@@ -32,18 +32,16 @@ impl FlipBitMutation {
 
     fn mutate_binary<R: Rng + Sized>(&self, genomes: &mut [Binary], rng: &mut R) {
         for g in genomes.iter_mut() {
-            let mut choices: Vec<_> = (0..g.len()).collect();
-            let positions = choices.choose_multiple(rng, self.mutation_size).cloned();
-            g.flip(positions);
+           g.mutate(self.mutation_size, rng);
         }
     }
 }
 
-impl<'a, R> VariationOperator<'a, Binary, R> for FlipBitMutation
+impl<R> VariationOperator<Binary, R> for FlipBitMutation
 where
     R: Rng + Sized,
 {
-    fn breed_from(&self, members: &[Member<'a, Binary>], rng: &mut R) -> Vec<Binary> {
+    fn breed_from(&self, members: &[Member<Binary>], rng: &mut R) -> Vec<Binary> {
         let mut genomes: Vec<_> = members
             .iter()
             .map(|m| m.individual.genome().to_owned())
@@ -80,11 +78,11 @@ impl OnePointCrossOver {
     }
 }
 
-impl<'a, R> VariationOperator<'a, Binary, R> for OnePointCrossOver
+impl<R> VariationOperator<Binary, R> for OnePointCrossOver
 where
     R: Rng + Sized,
 {
-    fn breed_from(&self, members: &[Member<'a, Binary>], rng: &mut R) -> Vec<Binary> {
+    fn breed_from(&self, members: &[Member<Binary>], rng: &mut R) -> Vec<Binary> {
         let genomes: Vec<_> = members
             .iter()
             .map(|m| m.individual.genome().to_owned())

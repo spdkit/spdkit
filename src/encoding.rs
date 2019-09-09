@@ -3,6 +3,8 @@
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*imports][imports:1]]
 use std::fmt::Display;
 use std::iter::FromIterator;
+
+use crate::random::*;
 // imports:1 ends here
 
 // base
@@ -67,6 +69,26 @@ impl Binary {
     }
 }
 // base:1 ends here
+
+// mutate
+
+// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*mutate][mutate:1]]
+impl crate::individual::Genome for Binary {}
+
+pub trait Mutate {
+    /// Mutate `n` bits randomly.
+    fn mutate<R: Rng + Sized>(&mut self, n: usize, rng: &mut R);
+}
+
+impl Mutate for Binary {
+    /// Mutate `n` bits randomly.
+    fn mutate<R: Rng + Sized>(&mut self, n: usize, rng: &mut R) {
+        let mut choices: Vec<_> = (0..self.len()).collect();
+        let positions = choices.choose_multiple(rng, n).cloned();
+        self.flip(positions);
+    }
+}
+// mutate:1 ends here
 
 // test
 

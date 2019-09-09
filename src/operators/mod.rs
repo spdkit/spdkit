@@ -21,6 +21,16 @@ pub trait SelectionOperator<'a>: GeneticOperator {
         R: Rng + Sized;
 }
 
+/// For producing new individuals.
+pub trait VariationOperator<G, R>: GeneticOperator
+where
+    G: Genome,
+    R: Rng + Sized,
+{
+    /// Create genomes for new individuals from the selected.
+    fn breed_from(&self, parents: &[Member<G>], rng: &mut R) -> Vec<G>;
+}
+
 /// For individual replacement
 pub trait ReplacementOperator: GeneticOperator {
     /// Remove `n` bad performaing members in population.
@@ -30,16 +40,6 @@ pub trait ReplacementOperator: GeneticOperator {
         population: &mut Population<G>,
         rng: &mut R,
     );
-}
-
-/// For producing new individuals.
-pub trait VariationOperator<'a, G, R>: GeneticOperator
-where
-    G: Genome,
-    R: Rng + Sized,
-{
-    /// Create genomes for new individuals from the selected.
-    fn breed_from(&self, parents: &[Member<'a, G>], rng: &mut R) -> Vec<G>;
 }
 
 pub mod replacement;

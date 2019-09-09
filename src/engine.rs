@@ -4,7 +4,7 @@
 use std::iter::FromIterator;
 
 use crate::common::*;
-use crate::encoding::Binary;
+use crate::encoding::*;
 use crate::fitness::*;
 use crate::individual::*;
 use crate::operators::*;
@@ -42,11 +42,11 @@ impl Engine {
 
         let selector = crate::operators::selection::ElitistSelection(2);
         let crossover = crate::operators::variation::OnePointCrossOver;
-        let mutator = crate::operators::variation::FlipBitMutation::new();
 
         let mut rng = get_rng!();
 
         let mut ig = 0;
+        let mut_prob = 0.1;
         std::iter::from_fn(move || {
             let new_population = if ig == 0 {
                 println!("initial population:");
@@ -58,11 +58,17 @@ impl Engine {
                 // 1. breed new individuals from old population
                 let parents = selector.select_from(&cur_population, &mut *rng);
                 println!("Selected {} members as parents", parents.len());
-                let new_genomes = crossover.breed_from(&parents, &mut *rng);
+                let mut new_genomes = crossover.breed_from(&parents, &mut *rng);
+
+                // mutate one bit randomly.
+                if rng.gen::<f64>() > mut_prob {
+                    for g in new_genomes.iter_mut() {
+                        g.mutate(1, &mut *rng);
+                    }
+                }
+
                 let mut new_indvs = OneMax.create(new_genomes);
                 println!("bred {} new individuals", new_indvs.len());
-                // breeder.select(&cur_population, &mut *rng);
-                // breeder.work();
 
                 // 2. create new population by supplanting bad performing individuals
 

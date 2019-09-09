@@ -4,6 +4,7 @@
 use std::marker::PhantomData;
 
 use crate::encoding::*;
+use crate::random::*;
 // imports:1 ends here
 
 // genome
@@ -12,8 +13,6 @@ use crate::encoding::*;
 pub trait Genome: Clone + Send {
     //
 }
-
-impl Genome for Binary {}
 // genome:1 ends here
 
 // individual

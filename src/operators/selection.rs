@@ -94,11 +94,16 @@ impl<'a> SelectionOperator<'a> for ElitistSelection {
 // roulette wheel
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*roulette%20wheel][roulette wheel:1]]
-/// Fitness proportionate selection:
+/// Fitness proportionate selection.
 ///
 /// # Reference
 ///
 /// https://en.wikipedia.org/wiki/Fitness_proportionate_selection
+///
+/// # Panic
+///
+/// * panic if individual fitness is negative.
+///
 #[derive(Debug)]
 pub struct RouletteWheelSelection {
     // Select `n` individuals
@@ -143,11 +148,7 @@ impl RouletteWheelSelection {
 }
 
 impl<'a> SelectionOperator<'a> for RouletteWheelSelection {
-    fn select_from<G, R>(
-        &self,
-        population: &'a Population<G>,
-        rng: &mut R,
-    ) -> Vec<Member<'a, G>>
+    fn select_from<G, R>(&self, population: &'a Population<G>, rng: &mut R) -> Vec<Member<'a, G>>
     where
         G: Genome,
         R: Rng + Sized,
