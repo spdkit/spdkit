@@ -101,7 +101,7 @@ fn test_cx_onepoint() {
 
     let indvs = crate::individual::OneMax.create(genomes);
     let population = crate::population::Builder::new(fitness::Maximize).build(indvs);
-    let parents = ElitistSelection(2).select_from(&population, &mut *rng);
+    let parents = ElitistSelection::new(2).select_from(&population, &mut *rng);
     for child in OnePointCrossOver.breed_from(&parents, &mut *rng) {
         //
     }

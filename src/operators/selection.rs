@@ -61,9 +61,15 @@ impl SelectionOperator for RandomSelection {
 /// ElitistSelection is a simple selection strategy where a limited number of
 /// individuals with the best fitness values are chosen.
 #[derive(Debug, Clone)]
-pub struct ElitistSelection(pub usize);
+pub struct ElitistSelection {
+    n: usize,
+}
 
 impl ElitistSelection {
+    pub fn new(n: usize) -> Self {
+        Self { n }
+    }
+
     /// Select `n` best members from `population`.
     fn select<'a, G>(&self, population: &'a Population<G>) -> Vec<Member<'a, G>>
     where
@@ -72,12 +78,16 @@ impl ElitistSelection {
         // Reversely sort members by fitnesses.
         let mut members: Vec<_> = population.members().collect();
         members.sort_by_fitness();
-        members[..self.0].to_vec()
+        members[..self.n].to_vec()
     }
 }
 
 impl SelectionOperator for ElitistSelection {
-    fn select_from<'a, G, R>(&self, population: &'a Population<G>, _rng: &mut R) -> Vec<Member<'a, G>>
+    fn select_from<'a, G, R>(
+        &self,
+        population: &'a Population<G>,
+        _rng: &mut R,
+    ) -> Vec<Member<'a, G>>
     where
         G: Genome,
         R: Rng + Sized,
@@ -156,6 +166,10 @@ pub struct TournamentSelection {
     n: usize,
 }
 impl TournamentSelection {
+    pub fn new(n: usize) -> Self {
+        Self { n }
+    }
+
     fn select<'a, G, R>(&self, population: &'a Population<G>, rng: &mut R) -> Vec<Member<'a, G>>
     where
         G: Genome,
@@ -181,7 +195,11 @@ impl TournamentSelection {
 }
 
 impl SelectionOperator for TournamentSelection {
-    fn select_from<'a, G, R>(&self, population: &'a Population<G>, rng: &mut R) -> Vec<Member<'a, G>>
+    fn select_from<'a, G, R>(
+        &self,
+        population: &'a Population<G>,
+        rng: &mut R,
+    ) -> Vec<Member<'a, G>>
     where
         G: Genome,
         R: Rng + Sized,
