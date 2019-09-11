@@ -199,6 +199,7 @@ mod test {
     use crate::common::*;
     use crate::fitness;
     use crate::operators::selection::ElitistSelection;
+    use crate::operators::selection::RouletteWheelSelection;
     use crate::operators::variation::OnePointCrossOver;
 
     #[test]
@@ -206,9 +207,9 @@ mod test {
         let population = build_initial_population(10);
 
         // create a breeder for new individuals
-        let mut breeder = crate::gears::breeder::GeneticBreeder::new()
+        let breeder = crate::gears::breeder::GeneticBreeder::new()
             .with_crossover(OnePointCrossOver)
-            .with_selector(ElitistSelection(2));
+            .with_selector(RouletteWheelSelection::new(2));
 
         let mut engine = Engine::new(population)
             .with_fitness(fitness::Maximize)

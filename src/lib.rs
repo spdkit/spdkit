@@ -10,7 +10,7 @@
 //        AUTHOR:  Wenping Guo <ybyygu@gmail.com>
 //       LICENCE:  GPL version 2 or upper
 //       CREATED:  <2018-06-14 Thu 20:52>
-//       UPDATED:  <2019-09-10 Tue 10:32>
+//       UPDATED:  <2019-09-11 Wed 11:04>
 //===============================================================================#
 // header:1 ends here
 
@@ -164,12 +164,11 @@ pub mod random; // the mod order is important for get_rng! macro
 pub mod encoding;
 pub mod engine;
 pub mod fitness;
+pub mod gears;
 pub mod individual;
 pub mod operators;
 pub mod population;
 pub mod termination;
-
-mod gears;
 // mods:1 ends here
 
 // prelude

@@ -104,21 +104,11 @@ impl SelectionOperator for ElitistSelection {
 pub struct RouletteWheelSelection {
     // Select `n` individuals
     n: usize,
-    // Allow selected individuals repeat or not
-    allow_repetition: bool,
 }
 
 impl RouletteWheelSelection {
     pub fn new(n: usize) -> Self {
-        Self {
-            n,
-            allow_repetition: true,
-        }
-    }
-
-    pub fn allow_repetition(mut self, r: bool) -> Self {
-        self.allow_repetition = r;
-        self
+        Self { n }
     }
 
     fn select<'a, G, R>(&self, population: &'a Population<G>, rng: &mut R) -> Vec<Member<'a, G>>
@@ -126,31 +116,14 @@ impl RouletteWheelSelection {
         G: Genome,
         R: Rng + Sized,
     {
-        let mut choices: Vec<_> = population.members().enumerate().collect();
         let mut selected: Vec<_> = vec![];
-
-        if self.allow_repetition {
-            for _ in 0..self.n {
-                let (_, m) = choices
-                    .choose_weighted(rng, |(_, m)| m.fitness)
-                    .unwrap_or_else(|e| panic!("Weighted selection failed: {:?}", e));
-                selected.push(m.clone());
-            }
-        } else {
-            for _ in 0..self.n {
-                // avoid: mutable_borrow_reservation_conflict
-                // https://github.com/rust-lang/rust/issues/59159
-                let i = {
-                    let (i, m) = choices
-                        .choose_weighted(rng, |(_, m)| m.fitness)
-                        .unwrap_or_else(|e| panic!("Weighted selection failed: {:?}", e));
-                    selected.push(m.clone());
-                    *i
-                };
-                choices.remove(i);
-            }
+        let choices: Vec<_> = population.members().enumerate().collect();
+        for _ in 0..self.n {
+            let (i, m) = choices
+                .choose_weighted(rng, |(_, m)| m.fitness)
+                .unwrap_or_else(|e| panic!("Weighted selection failed: {:?}", e));
+            selected.push(m.clone());
         }
-
         selected
     }
 }
