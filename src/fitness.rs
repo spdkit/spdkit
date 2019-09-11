@@ -17,7 +17,7 @@ use crate::individual::*;
 ///
 /// Fitness evaluation should not be an expensive operation.
 ///
-pub trait EvaluateFitness<G>
+pub trait EvaluateFitness<G>: Clone
 where
     G: Genome,
 {
@@ -26,6 +26,7 @@ where
 
 /// For Maximizing individual raw score. The larger of individual raw_score, the
 /// larger of the fitness.
+#[derive(Clone)]
 pub struct Maximize;
 
 impl<G> EvaluateFitness<G> for Maximize
@@ -44,6 +45,7 @@ where
 
 /// For minimizing individual raw score. The smaller of the raw_score, the
 /// larger of the fitness.
+#[derive(Clone)]
 pub struct Minimize;
 
 impl<G> EvaluateFitness<G> for Minimize
@@ -64,54 +66,57 @@ where
 // minimize energy
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*minimize%20energy][minimize energy:1]]
-/// The lower of the energy, the better of an individual
-pub struct MinimizeEnergy {
-    conversion: f64,
-    temperature: f64,
-}
+/// Minimize energy with Boltzmann distribution. The lower of the energy, the
+  /// better of an individual.
+#[derive(Clone)]
+  pub struct MinimizeEnergy {
+      conversion: f64,
+      temperature: f64,
+  }
 
-impl MinimizeEnergy {
-    pub fn new(temperature: f64) -> Self {
-        assert!(
-            temperature.is_sign_positive(),
-            "temperature cannot be negative!"
-        );
+  impl MinimizeEnergy {
+      pub fn new(temperature: f64) -> Self {
+          assert!(
+              temperature.is_sign_positive(),
+              "temperature cannot be negative!"
+          );
 
-        Self {
-            conversion: 96.0,
-            temperature,
-        }
-    }
+          Self {
+              conversion: 96.0,
+              temperature,
+          }
+      }
 
-    pub fn unit(mut self, u: &str) -> Self {
-        match u {
-            "eV" => self.conversion = 96.0,
-            "au" => self.conversion = 2625.5,
-            "kcal" => self.conversion = 4.184,
-            "kJ" => self.conversion = 1.0,
-            _ => panic!("unkonw unit: {}", u),
-        }
-        self
-    }
-}
+      pub fn energy_unit(mut self, u: &str) -> Self {
+          match u {
+              "eV" => self.conversion = 96.0,
+              "au" => self.conversion = 2625.5,
+              "kcal" => self.conversion = 4.184,
+              "kJ" => self.conversion = 1.0,
+              _ => panic!("unkonw unit: {}", u),
+          }
+          self
+      }
+  }
 
-impl<G> EvaluateFitness<G> for MinimizeEnergy
-where
-    G: Genome,
-{
-    fn evaluate(&self, indvs: &[Individual<G>]) -> Vec<f64> {
-        if let Some(score_ref) = indvs.iter().map(|indv| indv.raw_score()).fmax() {
-            indvs
-                .iter()
-                .map(|x| {
-                    let value = self.conversion * (score_ref - x.raw_score());
-                    (value / (self.temperature * 0.0083145)).exp()
-                })
-                .collect()
-        } else {
-            warn!("empty individual list!");
-            vec![]
-        }
-    }
-}
+  impl<G> EvaluateFitness<G> for MinimizeEnergy
+  where
+      G: Genome,
+  {
+      // Dynamic fitness scaling is applied.
+      fn evaluate(&self, indvs: &[Individual<G>]) -> Vec<f64> {
+          if let Some(score_ref) = indvs.iter().map(|indv| indv.raw_score()).fmax() {
+              indvs
+                  .iter()
+                  .map(|x| {
+                      let value = self.conversion * (score_ref - x.raw_score());
+                      (value / (self.temperature * 0.0083145)).exp()
+                  })
+                  .collect()
+          } else {
+              warn!("empty individual list!");
+              vec![]
+          }
+      }
+  }
 // minimize energy:1 ends here

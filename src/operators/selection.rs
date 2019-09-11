@@ -13,7 +13,7 @@ use super::*;
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*random%20selection][random selection:1]]
 /// Select individuals from population at random.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct RandomSelection {
     n: usize,
     allow_repetition: bool,
@@ -43,13 +43,9 @@ impl RandomSelection {
     }
 }
 
-impl<'a> SelectionOperator<'a> for RandomSelection {
+impl SelectionOperator for RandomSelection {
     /// Select individuals randomly from `population`.
-    fn select_from<G, R>(
-        &self,
-        population: &'a Population<G>,
-        rng: &mut R,
-    ) -> Vec<Member<'a, G>>
+    fn select_from<'a, G, R>(&self, population: &'a Population<G>, rng: &mut R) -> Vec<Member<'a, G>>
     where
         G: Genome,
         R: Rng + Sized,
@@ -64,7 +60,7 @@ impl<'a> SelectionOperator<'a> for RandomSelection {
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*elitist%20selection][elitist selection:1]]
 /// ElitistSelection is a simple selection strategy where a limited number of
 /// individuals with the best fitness values are chosen.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ElitistSelection(pub usize);
 
 impl ElitistSelection {
@@ -80,8 +76,8 @@ impl ElitistSelection {
     }
 }
 
-impl<'a> SelectionOperator<'a> for ElitistSelection {
-    fn select_from<G, R>(&self, population: &'a Population<G>, _rng: &mut R) -> Vec<Member<'a, G>>
+impl SelectionOperator for ElitistSelection {
+    fn select_from<'a, G, R>(&self, population: &'a Population<G>, _rng: &mut R) -> Vec<Member<'a, G>>
     where
         G: Genome,
         R: Rng + Sized,
@@ -104,7 +100,7 @@ impl<'a> SelectionOperator<'a> for ElitistSelection {
 ///
 /// * panic if individual fitness is negative.
 ///
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct RouletteWheelSelection {
     // Select `n` individuals
     n: usize,
@@ -113,6 +109,18 @@ pub struct RouletteWheelSelection {
 }
 
 impl RouletteWheelSelection {
+    pub fn new(n: usize) -> Self {
+        Self {
+            n,
+            allow_repetition: true,
+        }
+    }
+
+    pub fn allow_repetition(mut self, r: bool) -> Self {
+        self.allow_repetition = r;
+        self
+    }
+
     fn select<'a, G, R>(&self, population: &'a Population<G>, rng: &mut R) -> Vec<Member<'a, G>>
     where
         G: Genome,
@@ -147,8 +155,12 @@ impl RouletteWheelSelection {
     }
 }
 
-impl<'a> SelectionOperator<'a> for RouletteWheelSelection {
-    fn select_from<G, R>(&self, population: &'a Population<G>, rng: &mut R) -> Vec<Member<'a, G>>
+impl SelectionOperator for RouletteWheelSelection {
+    fn select_from<'a, G, R>(
+        &self,
+        population: &'a Population<G>,
+        rng: &mut R,
+    ) -> Vec<Member<'a, G>>
     where
         G: Genome,
         R: Rng + Sized,
@@ -166,7 +178,7 @@ impl<'a> SelectionOperator<'a> for RouletteWheelSelection {
 ///
 /// This implementation is a little bit different from the one described in the
 /// wikipedia article
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TournamentSelection {
     n: usize,
 }
@@ -195,8 +207,8 @@ impl TournamentSelection {
     }
 }
 
-impl<'a> SelectionOperator<'a> for TournamentSelection {
-    fn select_from<G, R>(&self, population: &'a Population<G>, rng: &mut R) -> Vec<Member<'a, G>>
+impl SelectionOperator for TournamentSelection {
+    fn select_from<'a, G, R>(&self, population: &'a Population<G>, rng: &mut R) -> Vec<Member<'a, G>>
     where
         G: Genome,
         R: Rng + Sized,

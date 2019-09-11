@@ -9,26 +9,25 @@ use crate::individual::*;
 use crate::population::*;
 use crate::random::*;
 
-pub trait GeneticOperator {}
-impl<T: std::fmt::Debug> GeneticOperator for T {}
+pub trait GeneticOperator: std::fmt::Debug + Clone {}
+impl<T: std::fmt::Debug + Clone> GeneticOperator for T {}
 
 /// For selecting individuals from population.
-pub trait SelectionOperator<'a>: GeneticOperator {
+pub trait SelectionOperator: GeneticOperator {
     /// Select some members from population.
-    fn select_from<G, R>(&self, population: &'a Population<G>, rng: &mut R) -> Vec<Member<'a, G>>
+    fn select_from<'a, G, R>(&self, population: &'a Population<G>, rng: &mut R) -> Vec<Member<'a, G>>
     where
         G: Genome,
         R: Rng + Sized;
 }
 
 /// For producing new individuals.
-pub trait VariationOperator<G, R>: GeneticOperator
+pub trait VariationOperator<G>: GeneticOperator
 where
     G: Genome,
-    R: Rng + Sized,
 {
     /// Create genomes for new individuals from the selected.
-    fn breed_from(&self, parents: &[Member<G>], rng: &mut R) -> Vec<G>;
+    fn breed_from<R: Rng + Sized>(&self, parents: &[Member<G>], rng: &mut R) -> Vec<G>;
 }
 
 /// For individual replacement

@@ -13,7 +13,7 @@ use super::*;
 // mutation
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*mutation][mutation:1]]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 /// This mutation method simply changes (flips) randomly selected bits.
 pub struct FlipBitMutation {
     /// The number of bits to be mutated.
@@ -32,16 +32,13 @@ impl FlipBitMutation {
 
     fn mutate_binary<R: Rng + Sized>(&self, genomes: &mut [Binary], rng: &mut R) {
         for g in genomes.iter_mut() {
-           g.mutate(self.mutation_size, rng);
+            g.mutate(self.mutation_size, rng);
         }
     }
 }
 
-impl<R> VariationOperator<Binary, R> for FlipBitMutation
-where
-    R: Rng + Sized,
-{
-    fn breed_from(&self, members: &[Member<Binary>], rng: &mut R) -> Vec<Binary> {
+impl VariationOperator<Binary> for FlipBitMutation {
+    fn breed_from<R: Rng + Sized>(&self, members: &[Member<Binary>], rng: &mut R) -> Vec<Binary> {
         let mut genomes: Vec<_> = members
             .iter()
             .map(|m| m.individual.genome().to_owned())
@@ -53,14 +50,14 @@ where
 }
 // mutation:1 ends here
 
-// crossover
+// onepoint crossover
 
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*crossover][crossover:1]]
-#[derive(Debug)]
+// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*onepoint%20crossover][onepoint crossover:1]]
 /// A point on both parents' chromosomes is picked randomly, and designated a
 /// 'crossover point'. Bits to the right of that point are swapped between the
 /// two parent chromosomes. This results in two offspring, each carrying some
 /// genetic information from both parents.
+#[derive(Debug, Clone)]
 pub struct OnePointCrossOver;
 
 impl OnePointCrossOver {
@@ -78,11 +75,8 @@ impl OnePointCrossOver {
     }
 }
 
-impl<R> VariationOperator<Binary, R> for OnePointCrossOver
-where
-    R: Rng + Sized,
-{
-    fn breed_from(&self, members: &[Member<Binary>], rng: &mut R) -> Vec<Binary> {
+impl VariationOperator<Binary> for OnePointCrossOver {
+    fn breed_from<R: Rng + Sized>(&self, members: &[Member<Binary>], rng: &mut R) -> Vec<Binary> {
         let genomes: Vec<_> = members
             .iter()
             .map(|m| m.individual.genome().to_owned())
@@ -112,4 +106,50 @@ fn test_cx_onepoint() {
         //
     }
 }
-// crossover:1 ends here
+// onepoint crossover:1 ends here
+
+// triadic crossover
+
+// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*triadic%20crossover][triadic crossover:1]]
+#[derive(Debug, Clone)]
+pub struct TriadicCrossOver;
+
+impl TriadicCrossOver {
+    fn crossover<R: Rng + Sized>(&self, members: &[Member<Binary>], rng: &mut R) -> Vec<Binary> {
+        debug!("breed new individuals using {} members.", members.len());
+
+        // sort by energy from lowest to highest
+        let mut members = members.to_vec();
+        members.sort_by_fitness();
+
+        for m in members.iter() {
+            debug!(">> {}", m);
+        }
+
+        let parent0 = members[0].individual.genome();
+        let parent1 = members[1].individual.genome();
+        let parent2 = members[2].individual.genome();
+
+        let positions_swap: Vec<_> = parent0
+            .iter()
+            .zip(parent1.iter())
+            .enumerate()
+            .filter_map(|(i, (b1, b2))| if b1 == b2 { Some(i) } else { None })
+            .collect();
+
+        let mut child1 = parent1.to_owned();
+        let mut child2 = parent2.to_owned();
+        for i in positions_swap {
+            std::mem::swap(&mut child1[i], &mut child2[i]);
+        }
+
+        vec![child1, child2]
+    }
+}
+
+impl VariationOperator<Binary> for TriadicCrossOver {
+    fn breed_from<R: Rng + Sized>(&self, parents: &[Member<Binary>], rng: &mut R) -> Vec<Binary> {
+        self.crossover(&parents, rng)
+    }
+}
+// triadic crossover:1 ends here

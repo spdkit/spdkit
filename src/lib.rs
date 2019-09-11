@@ -10,7 +10,7 @@
 //        AUTHOR:  Wenping Guo <ybyygu@gmail.com>
 //       LICENCE:  GPL version 2 or upper
 //       CREATED:  <2018-06-14 Thu 20:52>
-//       UPDATED:  <2019-09-07 Sat 19:12>
+//       UPDATED:  <2019-09-10 Tue 10:32>
 //===============================================================================#
 // header:1 ends here
 
@@ -159,17 +159,30 @@ pub(crate) mod common {
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*mods][mods:1]]
 #[macro_use]
-mod random; // the mod order is important for get_rng! macro
+pub mod random; // the mod order is important for get_rng! macro
 
-mod encoding;
-mod engine;
-mod fitness;
+pub mod encoding;
+pub mod engine;
+pub mod fitness;
+pub mod individual;
+pub mod operators;
+pub mod population;
+pub mod termination;
+
 mod gears;
-mod individual;
-mod operators;
-mod population;
-mod termination;
 // mods:1 ends here
+
+// prelude
+// exports traits
+
+// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*prelude][prelude:1]]
+pub mod prelude {
+    pub use crate::engine::Engine;
+    pub use crate::individual::Create;
+    pub use crate::individual::EvaluateScore;
+    pub use crate::random::*;
+}
+// prelude:1 ends here
 
 // src
 

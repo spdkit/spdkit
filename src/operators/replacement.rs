@@ -7,7 +7,7 @@ use super::*;
 // base
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*base][base:1]]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 /// Replace all bad performaing individuals in population with feasible
 /// candidates.
 pub struct FullReplacement;

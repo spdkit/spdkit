@@ -30,7 +30,7 @@ where
 /// Evaluate the raw score of individual.
 ///
 /// Potentially expensive operation.
-pub trait EvaluateScore<G>
+pub trait EvaluateScore<G>: Clone + std::fmt::Debug
 where
     G: Genome,
 {
@@ -101,6 +101,7 @@ impl<G: Genome, T: EvaluateScore<G>> Create<G> for T {
 // for test purpose
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*onemax][onemax:1]]
+#[derive(Clone, Debug)]
 pub struct OneMax;
 
 impl EvaluateScore<Binary> for OneMax {
