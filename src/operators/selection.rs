@@ -20,6 +20,13 @@ pub struct RandomSelection {
 }
 
 impl RandomSelection {
+    pub fn new(n: usize) -> Self {
+        Self {
+            n,
+            allow_repetition: true,
+        }
+    }
+
     /// Select individuals randomly from `population`.
     fn select<'a, G, R>(&self, population: &'a Population<G>, rng: &mut R) -> Vec<Member<'a, G>>
     where
@@ -45,7 +52,11 @@ impl RandomSelection {
 
 impl SelectionOperator for RandomSelection {
     /// Select individuals randomly from `population`.
-    fn select_from<'a, G, R>(&self, population: &'a Population<G>, rng: &mut R) -> Vec<Member<'a, G>>
+    fn select_from<'a, G, R>(
+        &self,
+        population: &'a Population<G>,
+        rng: &mut R,
+    ) -> Vec<Member<'a, G>>
     where
         G: Genome,
         R: Rng + Sized,
@@ -159,8 +170,11 @@ impl SelectionOperator for RouletteWheelSelection {
 /// Divide the populations into multiple parts and select the best one from each
 /// part in a deterministic way.
 ///
-/// This implementation is a little bit different from the one described in the
-/// wikipedia article
+/// # Notes
+///
+/// * This implementation avoids population members not being sampled, different
+/// from the one described in the wikipedia article.
+///
 #[derive(Debug, Clone)]
 pub struct TournamentSelection {
     n: usize,
@@ -208,6 +222,69 @@ impl SelectionOperator for TournamentSelection {
     }
 }
 // tournament selection:1 ends here
+
+// stochastic universal sampling
+
+// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*stochastic%20universal%20sampling][stochastic universal sampling:1]]
+/// Select the *n* individuals among the input *individuals*. The selection is
+/// made by using a single random value to sample all of the individuals by
+/// choosing them at evenly spaced intervals. The list returned contains
+/// references to the input *individuals*.
+#[derive(Clone, Debug)]
+pub struct StochasticUniversalSampling {
+    n: usize,
+}
+
+impl StochasticUniversalSampling {
+    pub fn new(n: usize) -> Self {
+        Self { n }
+    }
+}
+
+impl SelectionOperator for StochasticUniversalSampling {
+    // Ported from deap:
+    // https://github.com/DEAP/deap/blob/master/deap/tools/selection.py
+    fn select_from<'a, G, R>(
+        &self,
+        population: &'a Population<G>,
+        rng: &mut R,
+    ) -> Vec<Member<'a, G>>
+    where
+        G: Genome,
+        R: Rng + Sized,
+    {
+        let mut members: Vec<_> = population.members().collect();
+        // sanity check
+        for m in members.iter() {
+            assert!(
+                m.fitness.is_sign_positive(),
+                "invalid member fitness: {:}",
+                m.fitness
+            );
+        }
+        members.sort_by_fitness();
+
+        // fitness sum
+        let fsum = members.iter().fold(0.0, |acc, m| acc + m.fitness);
+
+        let mut chosen = vec![];
+        let distance = fsum / self.n as f64;
+        let start = rng.gen_range(0.0, distance);
+        let points = (0..self.n).map(|i| start + distance * i as f64);
+        for p in points {
+            let mut i = 0;
+            let mut sum_ = members[i].fitness;
+            while sum_ < p {
+                i += 1;
+                sum_ += members[i].fitness;
+            }
+            chosen.push(members[i].clone())
+        }
+
+        chosen
+    }
+}
+// stochastic universal sampling:1 ends here
 
 // test
 
