@@ -14,27 +14,91 @@ pub trait Terminate {
     fn meets<G: Genome>(&mut self, generation: &Generation<G>) -> bool;
 }
 
-/// Terminates simulation if max allowed evolution generation reached.
-pub struct MaxGeneration(pub usize);
+// /// Terminates simulation if max allowed evolution generation reached.
+// pub struct MaxGeneration(pub usize);
 
-impl Terminate for MaxGeneration {
-    fn meets<G: Genome>(&mut self, generation: &Generation<G>) -> bool {
-        generation.index >= self.0
-    }
-}
+// impl Terminate for MaxGeneration {
+//     fn meets<G: Genome>(&mut self, generation: &Generation<G>) -> bool {
+//         generation.index >= self.0
+//     }
+// }
+// base:1 ends here
 
+// running mean
+
+// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*running%20mean][running mean:1]]
 /// Terminates simulation if best solution found so far has no improvement for
 /// `n` generations.
-pub struct MaxGenerationNoImprovement {
-    n: usize,
+///
+/// The running mean termination criterion is fulfilled if the difference
+/// between the best objective value of the current generation and the average
+/// of the best objective values of the last generations is equal to or less
+/// than a given thresholdεepsilon (Jainet al., 2001)
+#[derive(Debug, Clone)]
+pub struct RunningMean {
+    // the last n generations for running mean
+    nlast: usize,
+    epsilon: f64,
+    scores: Vec<f64>,
 }
 
-impl Terminate for MaxGenerationNoImprovement {
-    fn meets<G: Genome>(&mut self, generation: &Generation<G>) -> bool {
-        unimplemented!()
+impl Default for RunningMean {
+    fn default() -> Self {
+        Self {
+            nlast: 15,
+            epsilon: 1e-6,
+            scores: Vec::with_capacity(15),
+        }
     }
 }
-// base:1 ends here
+
+impl RunningMean {
+    /// Construct a running-mean termination.
+    ///
+    /// # Parameters
+    ///
+    /// * nlast: The number of last generations for calculating running average
+    /// of best individual fitness.
+    ///
+    pub fn new(nlast: usize) -> Self {
+        Self {
+            nlast,
+            ..Self::default()
+        }
+    }
+}
+
+impl Terminate for RunningMean {
+    fn meets<G: Genome>(&mut self, generation: &Generation<G>) -> bool {
+        let best = generation
+            .population
+            .best_member()
+            .expect("empty population!")
+            .individual
+            .objective_value();
+
+        if generation.index < self.nlast {
+            self.scores.push(best);
+            return false;
+        } else {
+            // check if running mean meets termination criterion
+            let n = self.scores.len();
+            assert_eq!(n, self.nlast);
+            let fmean = self.scores.iter().sum::<f64>() / n as f64;
+            let diff = (best - fmean).abs();
+            if diff < self.epsilon {
+                return true;
+            }
+
+            // update collected fitness values
+            let _ = self.scores.remove(0);
+            self.scores.push(best);
+        }
+
+        false
+    }
+}
+// running mean:1 ends here
 
 // generation
 
@@ -56,8 +120,8 @@ where
     pub fn summary(&self) {
         println!("# generation: {}", self.index);
         println!(
-            " best individual raw score = {:}",
-            self.best_individual().raw_score()
+            " best individual objective value = {:}",
+            self.best_individual().objective_value()
         );
 
         println!("population members:");

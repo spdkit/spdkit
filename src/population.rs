@@ -168,7 +168,7 @@ where
             f,
             "indv {}, raw_score: {}, fitness = {}",
             self.individual.genome(),
-            self.individual.raw_score(),
+            self.individual.objective_value(),
             self.fitness
         )
     }
@@ -269,7 +269,7 @@ mod test {
         members.sort_by_fitness();
 
         for m in members.iter() {
-            //
+            // dbg!(m.individual, m.fitness);
         }
 
         let m = pop.best_member().unwrap();

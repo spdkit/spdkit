@@ -9,7 +9,7 @@ use crate::individual::*;
 // base
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*base][base:1]]
-/// Evaluate the fitness of individual in population based on raw_score of
+/// Evaluate the fitness of individual in population based on objective_value of
 /// individual.
 ///
 /// Fitness is a measure of quality of a solution (individual). A larger value
@@ -24,7 +24,7 @@ where
     fn evaluate(&self, indvs: &[Individual<G>]) -> Vec<f64>;
 }
 
-/// For Maximizing individual raw score. The larger of individual raw_score, the
+/// For Maximizing individual objective value. The larger of individual objective value, the
 /// larger of the fitness.
 #[derive(Clone)]
 pub struct Maximize;
@@ -34,8 +34,8 @@ where
     G: Genome,
 {
     fn evaluate(&self, indvs: &[Individual<G>]) -> Vec<f64> {
-        if let Some(score_ref) = indvs.iter().map(|indv| indv.raw_score()).fmin() {
-            indvs.iter().map(|x| x.raw_score() - score_ref).collect()
+        if let Some(score_ref) = indvs.iter().map(|indv| indv.objective_value()).fmin() {
+            indvs.iter().map(|x| x.objective_value() - score_ref).collect()
         } else {
             warn!("empty individual list!");
             vec![]
@@ -43,7 +43,7 @@ where
     }
 }
 
-/// For minimizing individual raw score. The smaller of the raw_score, the
+/// For minimizing individual objective value. The smaller of the objective_value, the
 /// larger of the fitness.
 #[derive(Clone)]
 pub struct Minimize;
@@ -53,8 +53,8 @@ where
     G: Genome,
 {
     fn evaluate(&self, indvs: &[Individual<G>]) -> Vec<f64> {
-        if let Some(score_ref) = indvs.iter().map(|indv| indv.raw_score()).fmax() {
-            indvs.iter().map(|x| score_ref - x.raw_score()).collect()
+        if let Some(score_ref) = indvs.iter().map(|indv| indv.objective_value()).fmax() {
+            indvs.iter().map(|x| score_ref - x.objective_value()).collect()
         } else {
             warn!("empty individual list!");
             vec![]
@@ -105,11 +105,11 @@ where
   {
       // Dynamic fitness scaling is applied.
       fn evaluate(&self, indvs: &[Individual<G>]) -> Vec<f64> {
-          if let Some(score_ref) = indvs.iter().map(|indv| indv.raw_score()).fmax() {
+          if let Some(score_ref) = indvs.iter().map(|indv| indv.objective_value()).fmax() {
               indvs
                   .iter()
                   .map(|x| {
-                      let value = self.conversion * (score_ref - x.raw_score());
+                      let value = self.conversion * (score_ref - x.objective_value());
                       (value / (self.temperature * 0.0083145)).exp()
                   })
                   .collect()

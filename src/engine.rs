@@ -25,7 +25,7 @@ pub(crate) fn evolve_one_step<C, B, F, R>(
     rng: &mut R,
 ) -> Population<Binary>
 where
-    C: EvaluateScore<Binary>,
+    C: EvaluateObjectiveValue<Binary>,
     B: Breed<Binary>,
     F: EvaluateFitness<Binary>,
     R: Rng + Sized,
@@ -79,7 +79,7 @@ use std::marker::PhantomData;
 /// Evolution engine.
 pub struct Engine<C, F, B>
 where
-    C: EvaluateScore<Binary>,
+    C: EvaluateObjectiveValue<Binary>,
     B: Breed<Binary>,
     F: EvaluateFitness<Binary>,
 {
@@ -91,11 +91,13 @@ where
     creator: Option<C>,
     breeder: Option<B>,
     fitness: Option<F>,
+
+    nlast: usize,
 }
 
 impl<C, F, B> Engine<C, F, B>
 where
-    C: EvaluateScore<Binary>,
+    C: EvaluateObjectiveValue<Binary>,
     B: Breed<Binary>,
     F: EvaluateFitness<Binary>,
 {
@@ -107,6 +109,7 @@ where
             creator: None,
             breeder: None,
             fitness: None,
+            nlast: 15,
         }
     }
 
@@ -138,6 +141,7 @@ where
         let creator = self.creator.take().expect("no creator");
         let fitness = self.fitness.take().expect("no fitness");
         let breeder = self.breeder.take().expect("no breeder");
+        let mut termination = RunningMean::new(self.nlast);
 
         std::iter::from_fn(move || {
             if ig == 0 {
@@ -160,9 +164,20 @@ where
                 index: ig,
                 population: self.population.clone(),
             };
-
             ig += 1;
-            Some(Ok(g))
+
+            // avoid infinite loop using a reliable termination criterion.
+            if termination.meets(&g) {
+                error!("Terminated for stagnation!");
+                error!(
+                    "Simulation has evolved for {} generations without changes.",
+                    self.nlast
+                );
+
+                None
+            } else {
+                Some(Ok(g))
+            }
         })
     }
 
@@ -198,7 +213,6 @@ mod test {
     use super::*;
     use crate::common::*;
     use crate::fitness;
-    use crate::operators::selection::ElitistSelection;
     use crate::operators::selection::RouletteWheelSelection;
     use crate::operators::variation::OnePointCrossOver;
 

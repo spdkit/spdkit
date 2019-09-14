@@ -30,7 +30,7 @@ where
 /// Evaluate the raw score of individual.
 ///
 /// Potentially expensive operation.
-pub trait EvaluateScore<G>: Clone + std::fmt::Debug
+pub trait EvaluateObjectiveValue<G>: Clone + std::fmt::Debug
 where
     G: Genome,
 {
@@ -45,7 +45,7 @@ where
     /// score.
     pub fn new<E>(genome: G, func: &E) -> Self
     where
-        E: EvaluateScore<G>,
+        E: EvaluateObjectiveValue<G>,
     {
         let raw_score = func.evaluate(&genome);
         Self { genome, raw_score }
@@ -56,8 +56,17 @@ where
         &self.genome
     }
 
-    /// Return the evaluated raw score of this individual.
-    pub fn raw_score(&self) -> f64 {
+    /// Return the evaluated objective value of this individual.
+    ///
+    /// This is sometimes referred to as objective fitness since this
+    /// measurement is based solely on an individual's geno/phenotype and is not
+    /// affected by other factors such as the current makeup of the population
+    ///
+    /// # Reference
+    ///
+    /// * De Jong 2006
+    ///
+    pub fn objective_value(&self) -> f64 {
         self.raw_score
     }
 }
@@ -80,7 +89,7 @@ pub trait Create<G: Genome> {
     fn create(&self, genomes: impl IntoIterator<Item = G>) -> Vec<Individual<G>>;
 }
 
-impl<G: Genome, T: EvaluateScore<G>> Create<G> for T {
+impl<G: Genome, T: EvaluateObjectiveValue<G>> Create<G> for T {
     /// Create individuals from genomes.
     fn create(&self, genomes: impl IntoIterator<Item = G>) -> Vec<Individual<G>> {
         genomes
@@ -104,7 +113,7 @@ impl<G: Genome, T: EvaluateScore<G>> Create<G> for T {
 #[derive(Clone, Debug)]
 pub struct OneMax;
 
-impl EvaluateScore<Binary> for OneMax {
+impl EvaluateObjectiveValue<Binary> for OneMax {
     fn evaluate(&self, genome: &Binary) -> f64 {
         let s: usize = genome.iter().filter(|&b| *b).count();
         s as f64
@@ -129,7 +138,11 @@ mod test {
 
         let indvs = OneMax.create(codes);
         for indv in indvs.iter() {
-            println!("indv {:}, raw_score = {}", indv.genome(), indv.raw_score());
+            println!(
+                "indv {:}, objective value = {}",
+                indv.genome(),
+                indv.objective_value()
+            );
         }
     }
 }

@@ -10,7 +10,7 @@
 //        AUTHOR:  Wenping Guo <ybyygu@gmail.com>
 //       LICENCE:  GPL version 2 or upper
 //       CREATED:  <2018-06-14 Thu 20:52>
-//       UPDATED:  <2019-09-11 Wed 11:04>
+//       UPDATED:  <2019-09-14 Sat 11:41>
 //===============================================================================#
 // header:1 ends here
 
@@ -178,7 +178,7 @@ pub mod termination;
 pub mod prelude {
     pub use crate::engine::Engine;
     pub use crate::individual::Create;
-    pub use crate::individual::EvaluateScore;
+    pub use crate::individual::EvaluateObjectiveValue;
     pub use crate::random::*;
 }
 // prelude:1 ends here
