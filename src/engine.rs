@@ -39,7 +39,6 @@ where
     println!("bred {} new individuals", new_indvs.len());
 
     // 2. create new population by supplanting bad performing individuals
-
     // 2.1 combine all available individuals into one.
     let old_indvs = cur_population.individuals();
     new_indvs.extend_from_slice(old_indvs);
@@ -49,26 +48,10 @@ where
         .size_limit(n_limit)
         .build(new_indvs);
 
-    // 2.3 remove `n` some bad performing individuals
+    // 2.3 remove `n` low quality individuals
     let n = new_population.survive();
     println!("removed {} bad individuals.", n);
     new_population.to_owned()
-}
-
-// test only
-pub(crate) fn build_initial_population(n: usize) -> Population<Binary> {
-    // generate `n` binary genomes in size of 10.
-    let keys: Vec<_> = (0..n).map(|_| random_binary(11)).collect();
-
-    let indvs = crate::individual::OneMax.create(keys);
-
-    crate::population::Builder::new(Maximize).build(indvs)
-}
-
-fn random_binary(length: usize) -> Binary {
-    let mut rng = get_rng!();
-    let list: Vec<_> = (0..length).map(|_| rng.gen()).collect();
-    Binary::new(list)
 }
 // core:1 ends here
 
@@ -86,10 +69,9 @@ where
     F: EvaluateFitness<G>,
 {
     population_size_limit: usize,
-    population: Population<G>,
-
     mut_prob: f64,
 
+    population: Option<Population<G>>,
     creator: Option<C>,
     breeder: Option<B>,
     fitness: Option<F>,
@@ -104,14 +86,16 @@ where
     B: Breed<G>,
     F: EvaluateFitness<G>,
 {
-    pub fn new(initial_population: Population<G>) -> Self {
+    pub fn new() -> Self {
         Self {
-            population: initial_population,
             population_size_limit: 10,
             mut_prob: 0.1,
+
             creator: None,
             breeder: None,
             fitness: None,
+            population: None,
+
             nlast: 15,
         }
     }
@@ -131,41 +115,56 @@ where
         self
     }
 
-    /// Evolves one step forward.
+    /// Evolves one step forward from seeds.
+    ///
+    /// # Parameters
+    ///
+    /// * seeds: genomes as initial seeds for evolution. The length of seeds
+    /// will be set as the internal population size limit.
     ///
     /// # Returns
     ///
     /// * return an iterator over `Generation`.
     ///
-    pub fn evolve<'a>(&'a mut self) -> impl Iterator<Item = Result<Generation<G>>> + 'a {
+    pub fn evolve<'a>(
+        &'a mut self,
+        seeds: &[G],
+    ) -> impl Iterator<Item = Result<Generation<G>>> + 'a {
         let mut rng = get_rng!();
         let mut ig = 0;
 
         let creator = self.creator.take().expect("no creator");
         let fitness = self.fitness.take().expect("no fitness");
         let breeder = self.breeder.take().expect("no breeder");
+
+        let indvs = creator.create(seeds.to_vec());
+        let nlimit = indvs.len();
+        let mut population = crate::population::Builder::new(fitness.clone())
+            .size_limit(nlimit)
+            .build(indvs);
+
         let mut termination = RunningMean::new(self.nlast);
 
         std::iter::from_fn(move || {
             if ig == 0 {
                 println!("initial population:");
-                for m in self.population.members() {
+                for m in population.members() {
                     // println!("{}", m);
                 }
             } else {
                 let mut new_population = evolve_one_step(
-                    &self.population,
+                    &population,
                     creator.clone(),
                     breeder.clone(),
                     fitness.clone(),
                     &mut *rng,
                 );
-                self.population = new_population;
+                population = new_population;
             }
 
             let g = Generation {
                 index: ig,
-                population: self.population.clone(),
+                population: population.clone(),
             };
             ig += 1;
 
@@ -184,27 +183,28 @@ where
         })
     }
 
-    /// Run the simulation until termination conditions met.
-    ///
-    /// # Returns
-    ///
-    /// * return the final `Generation`.
-    ///
-    pub fn run_until<T: Terminate>(
-        &mut self,
-        conditions: impl IntoIterator<Item = T>,
-    ) -> Result<Generation<G>> {
-        let mut conditions: Vec<_> = conditions.into_iter().collect();
-        for g in self.evolve() {
-            let generation = g?;
-            for t in conditions.iter_mut() {
-                if t.meets(&generation) {
-                    return Ok(generation);
-                }
-            }
-        }
-        unreachable!()
-    }
+    // /// Run the simulation until termination conditions met.
+    // ///
+    // /// # Returns
+    // ///
+    // /// * return the final `Generation`.
+    // ///
+    // pub fn run_until<T: Terminate>(
+    //     &mut self,
+    //     genomes: &[G],
+    //     conditions: impl IntoIterator<Item = T>,
+    // ) -> Result<Generation<G>> {
+    //     let mut conditions: Vec<_> = conditions.into_iter().collect();
+    //     for g in self.evolve(genomes) {
+    //         let generation = g?;
+    //         for t in conditions.iter_mut() {
+    //             if t.meets(&generation) {
+    //                 return Ok(generation);
+    //             }
+    //         }
+    //     }
+    //     unreachable!()
+    // }
 }
 // pub:1 ends here
 
@@ -221,24 +221,35 @@ mod test {
 
     #[test]
     fn test_engine() -> Result<()> {
-        let population = build_initial_population(10);
-
         // create a breeder for new individuals
         let breeder = crate::gears::breeder::GeneticBreeder::new()
             .with_crossover(OnePointCrossOver)
             .with_selector(RouletteWheelSelection::new(2));
 
-        let mut engine = Engine::new(population)
-            .with_fitness(fitness::Maximize)
+        let mut engine = Engine::new()
             .with_creator(OneMax)
+            .with_fitness(fitness::Maximize)
             .with_breeder(breeder);
 
-        for g in engine.evolve().take(10) {
+        let seeds = build_initial_genomes(10);
+        for g in engine.evolve(&seeds).take(10) {
             let generation = g?;
             generation.summary();
         }
 
         Ok(())
+    }
+
+    // test only
+    fn build_initial_genomes(n: usize) -> Vec<Binary> {
+        // generate `n` binary genomes in size of 10.
+        (0..n).map(|_| random_binary(11)).collect()
+    }
+
+    fn random_binary(length: usize) -> Binary {
+        let mut rng = get_rng!();
+        let list: Vec<_> = (0..length).map(|_| rng.gen()).collect();
+        Binary::new(list)
     }
 }
 // test:1 ends here
