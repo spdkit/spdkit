@@ -10,6 +10,7 @@ use crate::population::*;
 // base
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*base][base:1]]
+/// Common interface for termination conditions in simulation.
 pub trait Terminate {
     fn meets<G: Genome>(&mut self, generation: &Generation<G>) -> bool;
 }
@@ -33,7 +34,7 @@ pub trait Terminate {
 /// The running mean termination criterion is fulfilled if the difference
 /// between the best objective value of the current generation and the average
 /// of the best objective values of the last generations is equal to or less
-/// than a given thresholdεepsilon (Jainet al., 2001)
+/// than a given threshold `epsilon` (Jainet al., 2001)
 #[derive(Debug, Clone)]
 pub struct RunningMean {
     // the last n generations for running mean

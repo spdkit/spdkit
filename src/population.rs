@@ -131,18 +131,39 @@ where
 // sort members in the order of best fitness first.
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*members][members:1]]
-/// A member is a view of individual with its fitness in parent Population.
+/// A member is a view of individual with its evaluated fitness value in parent
+/// Population.
 #[derive(Debug, Clone)]
 pub struct Member<'a, G>
 where
     G: Genome,
 {
     pub individual: &'a Individual<G>,
-    pub fitness: f64,
+    fitness: f64,
 }
 
 pub trait SortMember {
     fn sort_by_fitness(&mut self);
+}
+
+impl<'a, G> Member<'a, G>
+where
+    G: Genome,
+{
+    /// Return individual objective value.
+    pub fn objective_value(&self) -> f64 {
+        self.individual.objective_value()
+    }
+
+    /// Return individual fitness value.
+    pub fn fitness_value(&self) -> f64 {
+        self.fitness
+    }
+
+    /// Return a reference to individual genome.
+    pub fn genome(&self) -> &G {
+        self.individual.genome()
+    }
 }
 
 impl<'a, G> SortMember for [Member<'a, G>]
@@ -166,7 +187,7 @@ where
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "indv {}, raw_score: {}, fitness = {}",
+            "indv {}, objective value: {}, fitness = {}",
             self.individual.genome(),
             self.individual.objective_value(),
             self.fitness
@@ -226,7 +247,7 @@ where
             let mut values = vec![];
             for m in members.into_iter().take(self.size_limit) {
                 indvs.push(m.individual.to_owned());
-                values.push(m.fitness);
+                values.push(m.fitness_value());
             }
 
             self.individuals = indvs;
@@ -269,11 +290,11 @@ mod test {
         members.sort_by_fitness();
 
         for m in members.iter() {
-            // dbg!(m.individual, m.fitness);
+            // dbg!(m.individual, m.fitness_value());
         }
 
         let m = pop.best_member().unwrap();
-        assert_eq!(m.individual.genome().to_string(), "11011");
+        assert_eq!(m.genome().to_string(), "11011");
     }
 }
 // test:1 ends here

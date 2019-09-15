@@ -141,7 +141,7 @@ impl RouletteWheelSelection {
         let choices: Vec<_> = population.members().enumerate().collect();
         for _ in 0..self.n {
             let (i, m) = choices
-                .choose_weighted(rng, |(_, m)| m.fitness)
+                .choose_weighted(rng, |(_, m)| m.fitness_value())
                 .unwrap_or_else(|e| panic!("Weighted selection failed: {:?}", e));
             selected.push(m.clone());
         }
@@ -257,15 +257,15 @@ impl SelectionOperator for StochasticUniversalSampling {
         // sanity check
         for m in members.iter() {
             assert!(
-                m.fitness.is_sign_positive(),
+                m.fitness_value().is_sign_positive(),
                 "invalid member fitness: {:}",
-                m.fitness
+                m.fitness_value()
             );
         }
         members.sort_by_fitness();
 
         // fitness sum
-        let fsum = members.iter().fold(0.0, |acc, m| acc + m.fitness);
+        let fsum = members.iter().fold(0.0, |acc, m| acc + m.fitness_value());
 
         let mut chosen = vec![];
         let distance = fsum / self.n as f64;
@@ -273,10 +273,10 @@ impl SelectionOperator for StochasticUniversalSampling {
         let points = (0..self.n).map(|i| start + distance * i as f64);
         for p in points {
             let mut i = 0;
-            let mut sum_ = members[i].fitness;
+            let mut sum_ = members[i].fitness_value();
             while sum_ < p {
                 i += 1;
-                sum_ += members[i].fitness;
+                sum_ += members[i].fitness_value();
             }
             chosen.push(members[i].clone())
         }

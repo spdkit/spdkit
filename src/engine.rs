@@ -17,17 +17,18 @@ use crate::gears::*;
 // core
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*core][core:1]]
-pub(crate) fn evolve_one_step<C, B, F, R>(
-    cur_population: &Population<Binary>,
+pub(crate) fn evolve_one_step<G, C, B, F, R>(
+    cur_population: &Population<G>,
     mut creator: C,
     mut breeder: B,
     fitness: F,
     rng: &mut R,
-) -> Population<Binary>
+) -> Population<G>
 where
-    C: EvaluateObjectiveValue<Binary>,
-    B: Breed<Binary>,
-    F: EvaluateFitness<Binary>,
+    G: Genome,
+    C: EvaluateObjectiveValue<G>,
+    B: Breed<G>,
+    F: EvaluateFitness<G>,
     R: Rng + Sized,
 {
     // 1. create m new individuals from parent population.
@@ -77,14 +78,15 @@ fn random_binary(length: usize) -> Binary {
 use std::marker::PhantomData;
 
 /// Evolution engine.
-pub struct Engine<C, F, B>
+pub struct Engine<G, C, F, B>
 where
-    C: EvaluateObjectiveValue<Binary>,
-    B: Breed<Binary>,
-    F: EvaluateFitness<Binary>,
+    G: Genome,
+    C: EvaluateObjectiveValue<G>,
+    B: Breed<G>,
+    F: EvaluateFitness<G>,
 {
     population_size_limit: usize,
-    population: Population<Binary>,
+    population: Population<G>,
 
     mut_prob: f64,
 
@@ -95,13 +97,14 @@ where
     nlast: usize,
 }
 
-impl<C, F, B> Engine<C, F, B>
+impl<G, C, F, B> Engine<G, C, F, B>
 where
-    C: EvaluateObjectiveValue<Binary>,
-    B: Breed<Binary>,
-    F: EvaluateFitness<Binary>,
+    G: Genome,
+    C: EvaluateObjectiveValue<G>,
+    B: Breed<G>,
+    F: EvaluateFitness<G>,
 {
-    pub fn new(initial_population: Population<Binary>) -> Self {
+    pub fn new(initial_population: Population<G>) -> Self {
         Self {
             population: initial_population,
             population_size_limit: 10,
@@ -134,7 +137,7 @@ where
     ///
     /// * return an iterator over `Generation`.
     ///
-    pub fn evolve<'a>(&'a mut self) -> impl Iterator<Item = Result<Generation<Binary>>> + 'a {
+    pub fn evolve<'a>(&'a mut self) -> impl Iterator<Item = Result<Generation<G>>> + 'a {
         let mut rng = get_rng!();
         let mut ig = 0;
 
@@ -147,7 +150,7 @@ where
             if ig == 0 {
                 println!("initial population:");
                 for m in self.population.members() {
-                    println!("{}", m);
+                    // println!("{}", m);
                 }
             } else {
                 let mut new_population = evolve_one_step(
@@ -190,7 +193,7 @@ where
     pub fn run_until<T: Terminate>(
         &mut self,
         conditions: impl IntoIterator<Item = T>,
-    ) -> Result<Generation<Binary>> {
+    ) -> Result<Generation<G>> {
         let mut conditions: Vec<_> = conditions.into_iter().collect();
         for g in self.evolve() {
             let generation = g?;

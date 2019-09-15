@@ -41,7 +41,7 @@ impl VariationOperator<Binary> for FlipBitMutation {
     fn breed_from<R: Rng + Sized>(&self, members: &[Member<Binary>], rng: &mut R) -> Vec<Binary> {
         let mut genomes: Vec<_> = members
             .iter()
-            .map(|m| m.individual.genome().to_owned())
+            .map(|m| m.genome().to_owned())
             .collect();
         self.mutate_binary(&mut genomes, rng);
 
@@ -79,7 +79,7 @@ impl VariationOperator<Binary> for OnePointCrossOver {
     fn breed_from<R: Rng + Sized>(&self, members: &[Member<Binary>], rng: &mut R) -> Vec<Binary> {
         let genomes: Vec<_> = members
             .iter()
-            .map(|m| m.individual.genome().to_owned())
+            .map(|m| m.genome().to_owned())
             .collect();
 
         self.crossover_binary(&genomes, rng)

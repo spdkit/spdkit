@@ -20,7 +20,7 @@ pub struct GeneticBreeder<C, S, G>
 where
     C: VariationOperator<G>,
     S: SelectionOperator,
-    G: Genome,
+    G: Genome + Mutate,
 {
     cx_prob: f64,
     mut_prob: f64,
@@ -34,7 +34,7 @@ impl<C, S, G> GeneticBreeder<C, S, G>
 where
     C: VariationOperator<G>,
     S: SelectionOperator,
-    G: Genome,
+    G: Genome + Mutate,
 {
     pub fn new() -> Self {
         Self {
@@ -71,18 +71,19 @@ where
     }
 }
 
-impl<C, S> Breed<Binary> for GeneticBreeder<C, S, Binary>
+impl<G, C, S> Breed<G> for GeneticBreeder<C, S, G>
 where
-    C: VariationOperator<Binary>,
+    G: Genome + Mutate,
+    C: VariationOperator<G>,
     S: SelectionOperator,
 {
     /// Breed `m` new genomes from parent population.
     fn breed<R: Rng + Sized>(
         &mut self,
         m: usize,
-        population: &Population<Binary>,
+        population: &Population<G>,
         rng: &mut R,
-    ) -> Vec<Binary> {
+    ) -> Vec<G> {
         let mut crossover = self.crossover.take().expect("breeder has no crossover");
         let mut selector = self.selector.take().expect("breeder has no selector");
 
@@ -96,7 +97,7 @@ where
             }
         }
 
-        // mutate one bit randomly.
+        // mutate one bit/one point randomly.
         if rng.gen::<f64>() > self.mut_prob {
             for g in required_genomes.iter_mut() {
                 g.mutate(1, rng);
