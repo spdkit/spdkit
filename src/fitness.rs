@@ -21,7 +21,7 @@ pub trait EvaluateFitness<G>: Clone
 where
     G: Genome,
 {
-    fn evaluate(&self, indvs: &[Individual<G>]) -> Vec<f64>;
+    fn evaluate(&mut self, indvs: &[Individual<G>]) -> Vec<f64>;
 }
 
 /// For Maximizing individual objective value. The larger of individual objective value, the
@@ -33,7 +33,7 @@ impl<G> EvaluateFitness<G> for Maximize
 where
     G: Genome,
 {
-    fn evaluate(&self, indvs: &[Individual<G>]) -> Vec<f64> {
+    fn evaluate(&mut self, indvs: &[Individual<G>]) -> Vec<f64> {
         if let Some(score_ref) = indvs.iter().map(|indv| indv.objective_value()).fmin() {
             indvs.iter().map(|x| x.objective_value() - score_ref).collect()
         } else {
@@ -52,7 +52,7 @@ impl<G> EvaluateFitness<G> for Minimize
 where
     G: Genome,
 {
-    fn evaluate(&self, indvs: &[Individual<G>]) -> Vec<f64> {
+    fn evaluate(&mut self, indvs: &[Individual<G>]) -> Vec<f64> {
         if let Some(score_ref) = indvs.iter().map(|indv| indv.objective_value()).fmax() {
             indvs.iter().map(|x| score_ref - x.objective_value()).collect()
         } else {
@@ -104,7 +104,7 @@ where
       G: Genome,
   {
       // Dynamic fitness scaling is applied.
-      fn evaluate(&self, indvs: &[Individual<G>]) -> Vec<f64> {
+      fn evaluate(&mut self, indvs: &[Individual<G>]) -> Vec<f64> {
           if let Some(score_ref) = indvs.iter().map(|indv| indv.objective_value()).fmax() {
               indvs
                   .iter()

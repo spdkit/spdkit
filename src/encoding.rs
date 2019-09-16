@@ -13,6 +13,8 @@ use crate::random::*;
 #[derive(Clone, Debug, PartialEq)]
 pub struct Binary(Vec<bool>);
 
+impl crate::individual::Genome for Binary {}
+
 // Print as binary string, e.g. 110101.
 impl Display for Binary {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
@@ -70,11 +72,15 @@ impl Binary {
 }
 // base:1 ends here
 
+// molecule
+
+// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*molecule][molecule:1]]
+impl crate::individual::Genome for gchemol::Molecule {}
+// molecule:1 ends here
+
 // mutate
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*mutate][mutate:1]]
-impl crate::individual::Genome for Binary {}
-
 pub trait Mutate {
     /// Mutate `n` bits randomly.
     fn mutate<R: Rng + Sized>(&mut self, n: usize, rng: &mut R);

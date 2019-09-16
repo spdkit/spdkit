@@ -14,14 +14,36 @@ use crate::termination::*;
 use crate::gears::*;
 // imports:1 ends here
 
+// base
+
+// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*base][base:1]]
+use std::marker::PhantomData;
+
+/// Evolution engine.
+pub struct Engine<G, C, F, B>
+where
+    G: Genome,
+    C: EvaluateObjectiveValue<G>,
+    B: Breed<G>,
+    F: EvaluateFitness<G>,
+{
+    mut_prob: f64,
+
+    population: Option<Population<G>>,
+    breeder: Option<B>,
+    valuer: Option<Valuer<G, F, C>>,
+
+    nlast: usize,
+}
+// base:1 ends here
+
 // core
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*core][core:1]]
 pub(crate) fn evolve_one_step<G, C, B, F, R>(
     cur_population: &Population<G>,
-    mut creator: C,
-    mut breeder: B,
-    fitness: F,
+    breeder: &mut B,
+    valuer: &mut Valuer<G, F, C>,
     rng: &mut R,
 ) -> Population<G>
 where
@@ -33,9 +55,10 @@ where
 {
     // 1. create m new individuals from parent population.
     let m = cur_population.size();
-    let n_limit = cur_population.size_limit();
+    // 1.1 breed new genomes
     let new_genomes = breeder.breed(m, cur_population, rng);
-    let mut new_indvs = creator.create(new_genomes);
+    // 1.2 create new individuals from genomes.
+    let mut new_indvs = valuer.create_individuals(new_genomes);
     println!("bred {} new individuals", new_indvs.len());
 
     // 2. create new population by supplanting bad performing individuals
@@ -44,9 +67,8 @@ where
     new_indvs.extend_from_slice(old_indvs);
 
     // 2.2 create a new population from combined new individuals
-    let mut new_population = crate::population::Builder::new(fitness)
-        .size_limit(n_limit)
-        .build(new_indvs);
+    let nlimit = cur_population.size_limit();
+    let mut new_population = valuer.build_population(new_indvs).with_size_limit(nlimit);
 
     // 2.3 remove `n` low quality individuals
     let n = new_population.survive();
@@ -58,27 +80,6 @@ where
 // pub
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*pub][pub:1]]
-use std::marker::PhantomData;
-
-/// Evolution engine.
-pub struct Engine<G, C, F, B>
-where
-    G: Genome,
-    C: EvaluateObjectiveValue<G>,
-    B: Breed<G>,
-    F: EvaluateFitness<G>,
-{
-    population_size_limit: usize,
-    mut_prob: f64,
-
-    population: Option<Population<G>>,
-    creator: Option<C>,
-    breeder: Option<B>,
-    fitness: Option<F>,
-
-    nlast: usize,
-}
-
 impl<G, C, F, B> Engine<G, C, F, B>
 where
     G: Genome,
@@ -88,25 +89,18 @@ where
 {
     pub fn new() -> Self {
         Self {
-            population_size_limit: 10,
             mut_prob: 0.1,
 
-            creator: None,
             breeder: None,
-            fitness: None,
             population: None,
+            valuer: None,
 
             nlast: 15,
         }
     }
 
-    pub fn with_fitness(mut self, f: F) -> Self {
-        self.fitness = Some(f);
-        self
-    }
-
-    pub fn with_creator(mut self, c: C) -> Self {
-        self.creator = Some(c);
+    pub fn with_valuer(mut self, valuer: Valuer<G, F, C>) -> Self {
+        self.valuer = Some(valuer);
         self
     }
 
@@ -133,18 +127,16 @@ where
         let mut rng = get_rng!();
         let mut ig = 0;
 
-        let creator = self.creator.take().expect("no creator");
-        let fitness = self.fitness.take().expect("no fitness");
-        let breeder = self.breeder.take().expect("no breeder");
-
-        let indvs = creator.create(seeds.to_vec());
-        let nlimit = indvs.len();
-        let mut population = crate::population::Builder::new(fitness.clone())
-            .size_limit(nlimit)
-            .build(indvs);
-
         let mut termination = RunningMean::new(self.nlast);
+        let mut breeder = self.breeder.take().expect("no breeder");
+        let mut valuer = self.valuer.take().expect("no valuer");
 
+        // create individuals, build population.
+        let indvs = valuer.create_individuals(seeds.to_vec());
+        let nlimit = seeds.len();
+        let mut population = valuer.build_population(indvs).with_size_limit(nlimit);
+
+        // enter main loop
         std::iter::from_fn(move || {
             if ig == 0 {
                 println!("initial population:");
@@ -152,13 +144,9 @@ where
                     // println!("{}", m);
                 }
             } else {
-                let mut new_population = evolve_one_step(
-                    &population,
-                    creator.clone(),
-                    breeder.clone(),
-                    fitness.clone(),
-                    &mut *rng,
-                );
+                let mut new_population =
+                    evolve_one_step(&population, &mut breeder, &mut valuer, &mut *rng);
+
                 population = new_population;
             }
 
@@ -221,15 +209,17 @@ mod test {
 
     #[test]
     fn test_engine() -> Result<()> {
-        // create a breeder for new individuals
-        let breeder = crate::gears::breeder::GeneticBreeder::new()
+        // create a breeder gear
+        let breeder = crate::gears::GeneticBreeder::new()
             .with_crossover(OnePointCrossOver)
             .with_selector(RouletteWheelSelection::new(2));
 
-        let mut engine = Engine::new()
-            .with_creator(OneMax)
+        // create a valuer gear
+        let valuer = Valuer::new()
             .with_fitness(fitness::Maximize)
-            .with_breeder(breeder);
+            .with_creator(OneMax);
+
+        let mut engine = Engine::new().with_valuer(valuer).with_breeder(breeder);
 
         let seeds = build_initial_genomes(10);
         for g in engine.evolve(&seeds).take(10) {

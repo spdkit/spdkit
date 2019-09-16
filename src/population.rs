@@ -41,19 +41,14 @@ where
         self.individuals.len()
     }
 
-    /// Set population size limit.
-    pub fn set_size_limit(&mut self, limit: usize) {
-        self.size_limit = limit;
-    }
-
     /// Return population size limit.
     pub fn size_limit(&self) -> usize {
         self.size_limit
     }
 
     /// Re-evaluate individuals in population with `fitness` function.
-    pub fn evaluate_with<F: EvaluateFitness<G>>(&mut self, fitness: F) {
-        self.fitness_values = evaluate_individuals(&self.individuals, &fitness);
+    pub fn evaluate_with<F: EvaluateFitness<G>>(&mut self, fitness: &mut F) {
+        self.fitness_values = evaluate_individuals(&self.individuals, fitness);
     }
 
     /// Re-evaluate individual fitness with individual weight.
@@ -62,10 +57,32 @@ where
             *fitness *= weight;
         }
     }
+
+    /// Build a population from individuals `indvs` and fitness function.
+    /// The population size limit is set as the size of `indvs`.
+    pub fn build<F>(indvs: Vec<Individual<G>>, fitness: &mut F) -> Self
+    where
+        F: EvaluateFitness<G>,
+    {
+        let nlimit = indvs.len();
+        let fitness_values = evaluate_individuals(&indvs, fitness);
+
+        Self {
+            individuals: indvs,
+            fitness_values,
+            size_limit: nlimit,
+        }
+    }
+
+    /// Construct with population size limit.
+    pub fn with_size_limit(mut self, limit: usize) -> Self {
+        self.size_limit = limit;
+        self
+    }
 }
 
 /// Evaluate individuals with a fitness function.
-fn evaluate_individuals<G, F>(indvs: &[Individual<G>], fitness: &F) -> Vec<f64>
+fn evaluate_individuals<G, F>(indvs: &[Individual<G>], fitness: &mut F) -> Vec<f64>
 where
     G: Genome,
     F: EvaluateFitness<G>,
@@ -79,53 +96,6 @@ where
     fitness_values
 }
 // base:1 ends here
-
-// builder
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*builder][builder:1]]
-/// Population builder.
-pub struct Builder<G, F>
-where
-    G: Genome,
-    F: EvaluateFitness<G>,
-{
-    fitness: F,
-    size_limit: usize,
-    _empty: PhantomData<G>,
-}
-
-impl<G, F> Builder<G, F>
-where
-    G: Genome,
-    F: EvaluateFitness<G>,
-{
-    /// Construct a population builder with a fitness function.
-    pub fn new(fitness: F) -> Self {
-        Self {
-            fitness,
-            size_limit: 10,
-            _empty: PhantomData,
-        }
-    }
-
-    /// Constraint population size.
-    pub fn size_limit(mut self, n: usize) -> Self {
-        self.size_limit = n;
-        self
-    }
-
-    /// Build a population from a group of individuals.
-    pub fn build(&self, indvs: Vec<Individual<G>>) -> Population<G> {
-        let fitness_values = evaluate_individuals(&indvs, &self.fitness);
-
-        Population {
-            individuals: indvs,
-            fitness_values,
-            size_limit: self.size_limit,
-        }
-    }
-}
-// builder:1 ends here
 
 // members
 // sort members in the order of best fitness first.
@@ -280,10 +250,10 @@ mod test {
             .map(|x| Binary::from_str(x))
             .collect();
 
+        let mut fitness = crate::fitness::Maximize;
         let indvs = crate::individual::OneMax.create(keys);
-        let pop = crate::population::Builder::new(crate::fitness::Maximize)
-            .size_limit(10)
-            .build(indvs);
+        let pop = Population::build(indvs, &mut fitness).with_size_limit(10);
+
         assert!(!pop.is_oversized());
 
         let mut members: Vec<_> = pop.members().collect();

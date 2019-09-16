@@ -77,10 +77,7 @@ impl OnePointCrossOver {
 
 impl VariationOperator<Binary> for OnePointCrossOver {
     fn breed_from<R: Rng + Sized>(&self, members: &[Member<Binary>], rng: &mut R) -> Vec<Binary> {
-        let genomes: Vec<_> = members
-            .iter()
-            .map(|m| m.genome().to_owned())
-            .collect();
+        let genomes: Vec<_> = members.iter().map(|m| m.genome().to_owned()).collect();
 
         self.crossover_binary(&genomes, rng)
     }
@@ -88,7 +85,6 @@ impl VariationOperator<Binary> for OnePointCrossOver {
 
 #[test]
 fn test_cx_onepoint() {
-    use crate::fitness;
     use crate::operators::selection::ElitistSelection;
 
     // get global rng
@@ -100,7 +96,8 @@ fn test_cx_onepoint() {
         .collect();
 
     let indvs = crate::individual::OneMax.create(genomes);
-    let population = crate::population::Builder::new(fitness::Maximize).build(indvs);
+    let mut fitness = crate::fitness::Maximize;
+    let population = Population::build(indvs, &mut fitness);
     let parents = ElitistSelection::new(2).select_from(&population, &mut *rng);
     for child in OnePointCrossOver.breed_from(&parents, &mut *rng) {
         //

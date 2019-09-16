@@ -10,7 +10,7 @@
 //        AUTHOR:  Wenping Guo <ybyygu@gmail.com>
 //       LICENCE:  GPL version 2 or upper
 //       CREATED:  <2018-06-14 Thu 20:52>
-//       UPDATED:  <2019-09-15 Sun 14:57>
+//       UPDATED:  <2019-09-16 Mon 11:46>
 //===============================================================================#
 // header:1 ends here
 
@@ -169,6 +169,7 @@ pub mod individual;
 pub mod operators;
 pub mod population;
 pub mod termination;
+mod annealing;
 // mods:1 ends here
 
 // prelude
@@ -176,7 +177,6 @@ pub mod termination;
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*prelude][prelude:1]]
 pub mod prelude {
-    pub use crate::engine::Engine;
     pub use crate::individual::Create;
     pub use crate::individual::EvaluateObjectiveValue;
     pub use crate::random::*;
@@ -185,6 +185,16 @@ pub mod prelude {
     pub use crate::encoding::Mutate;
 }
 // prelude:1 ends here
+
+// exports
+
+// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*exports][exports:1]]
+pub use crate::engine::Engine;
+pub use crate::gears::GeneticBreeder;
+pub use crate::gears::Valuer;
+pub use crate::individual::{Genome, Individual};
+pub use crate::population::Population;
+// exports:1 ends here
 
 // src
 

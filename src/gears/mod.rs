@@ -30,5 +30,9 @@ pub trait Breed<G: Genome>: Clone {
     ) -> Vec<G>;
 }
 
-pub mod breeder;
+mod breeder;
+mod valuer;
+
+pub use self::breeder::GeneticBreeder;
+pub use self::valuer::Valuer;
 // mod.rs:1 ends here

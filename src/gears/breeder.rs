@@ -84,8 +84,9 @@ where
         population: &Population<G>,
         rng: &mut R,
     ) -> Vec<G> {
-        let mut crossover = self.crossover.take().expect("breeder has no crossover");
-        let mut selector = self.selector.take().expect("breeder has no selector");
+        // let mut crossover = self.crossover.take().expect("breeder has no crossover");
+        let crossover = self.crossover.as_mut().expect("breeder has no crossover.");
+        let selector = self.selector.as_mut().expect("breeder has no selector");
 
         // loop until required number of genomes
         let mut required_genomes = Vec::with_capacity(m);
