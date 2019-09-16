@@ -2,9 +2,10 @@
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*base][base:1]]
 /// Simulated annealing.
+#[derive(Clone, Debug)]
 pub struct Annealer {
-    temperature_high: f64,
-    temperature_low: f64,
+    pub(crate) temperature_high: f64,
+    pub(crate) temperature_low: f64,
     cooling_rate: f64,
     temperature: Option<f64>,
 }

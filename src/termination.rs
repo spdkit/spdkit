@@ -46,9 +46,9 @@ pub struct RunningMean {
 impl Default for RunningMean {
     fn default() -> Self {
         Self {
-            nlast: 15,
+            nlast: 30,
             epsilon: 1e-6,
-            scores: Vec::with_capacity(15),
+            scores: Vec::with_capacity(30),
         }
     }
 }

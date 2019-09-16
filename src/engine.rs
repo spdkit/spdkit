@@ -95,7 +95,7 @@ where
             population: None,
             valuer: None,
 
-            nlast: 15,
+            nlast: 30,
         }
     }
 
