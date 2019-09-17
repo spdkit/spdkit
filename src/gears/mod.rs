@@ -32,6 +32,7 @@ pub trait Breed<G: Genome>: Clone {
 
 mod breeder;
 mod valuer;
+mod survivor;
 
 pub use self::breeder::GeneticBreeder;
 pub use self::valuer::Valuer;
