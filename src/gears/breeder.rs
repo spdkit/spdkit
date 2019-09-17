@@ -93,15 +93,12 @@ where
         while required_genomes.len() < m {
             let parents = selector.select_from(population, rng);
             let new_genomes = crossover.breed_from(&parents, rng);
-            for g in new_genomes {
+            for mut g in new_genomes {
+                // mutate one bit/one point randomly.
+                if rng.gen_range(0.0, 1.0) < self.mut_prob {
+                    g.mutate(1, rng);
+                }
                 required_genomes.push(g);
-            }
-        }
-
-        // mutate one bit/one point randomly.
-        if rng.gen::<f64>() > self.mut_prob {
-            for g in required_genomes.iter_mut() {
-                g.mutate(1, rng);
             }
         }
 
