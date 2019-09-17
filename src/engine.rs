@@ -144,7 +144,7 @@ where
                     // println!("{}", m);
                 }
             } else {
-                let mut new_population =
+                let new_population =
                     evolve_one_step(&population, &mut breeder, &mut valuer, &mut *rng);
 
                 population = new_population;

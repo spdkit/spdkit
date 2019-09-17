@@ -34,7 +34,7 @@ pub trait EvaluateObjectiveValue<G>: Clone + std::fmt::Debug
 where
     G: Genome,
 {
-    fn evaluate(&self, genome: &G) -> f64;
+    fn evaluate(&mut self, genome: &G) -> f64;
 }
 
 impl<G> Individual<G>
@@ -43,7 +43,7 @@ where
 {
     /// Create a new individual from a genome and evaluation function for raw
     /// score.
-    pub fn new<E>(genome: G, func: &E) -> Self
+    pub fn new<E>(genome: G, func: &mut E) -> Self
     where
         E: EvaluateObjectiveValue<G>,
     {
@@ -86,12 +86,12 @@ where
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*create][create:1]]
 /// blanket implementation for creating new individuals from genomes
 pub trait Create<G: Genome> {
-    fn create(&self, genomes: impl IntoIterator<Item = G>) -> Vec<Individual<G>>;
+    fn create(&mut self, genomes: impl IntoIterator<Item = G>) -> Vec<Individual<G>>;
 }
 
 impl<G: Genome, T: EvaluateObjectiveValue<G>> Create<G> for T {
     /// Create individuals from genomes.
-    fn create(&self, genomes: impl IntoIterator<Item = G>) -> Vec<Individual<G>> {
+    fn create(&mut self, genomes: impl IntoIterator<Item = G>) -> Vec<Individual<G>> {
         genomes
             .into_iter()
             .map(|g| {
@@ -114,7 +114,7 @@ impl<G: Genome, T: EvaluateObjectiveValue<G>> Create<G> for T {
 pub struct OneMax;
 
 impl EvaluateObjectiveValue<Binary> for OneMax {
-    fn evaluate(&self, genome: &Binary) -> f64 {
+    fn evaluate(&mut self, genome: &Binary) -> f64 {
         let s: usize = genome.iter().filter(|&b| *b).count();
         s as f64
     }
