@@ -10,7 +10,7 @@
 //        AUTHOR:  Wenping Guo <ybyygu@gmail.com>
 //       LICENCE:  GPL version 2 or upper
 //       CREATED:  <2018-06-14 Thu 20:52>
-//       UPDATED:  <2019-09-17 Tue 09:00>
+//       UPDATED:  <2019-09-18 Wed 11:24>
 //===============================================================================#
 // header:1 ends here
 
@@ -20,7 +20,7 @@
 #[macro_use]
 extern crate lazy_static;
 
-pub(crate) mod common {
+pub mod common {
     pub use quicli::prelude::*;
     pub type Result<T> = ::std::result::Result<T, Error>;
 

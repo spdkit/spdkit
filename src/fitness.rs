@@ -116,7 +116,7 @@ where
         };
         println!("annealing temperature: {}", temperature);
 
-        if let Some(score_ref) = indvs.iter().map(|indv| indv.objective_value()).fmax() {
+        if let Some(score_ref) = indvs.iter().map(|indv| indv.objective_value()).fmin() {
             indvs
                 .iter()
                 .map(|x| {
