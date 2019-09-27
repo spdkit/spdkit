@@ -8,7 +8,7 @@ edition = "2018"
 authors = ["Wenping Guo <ybyygu@gmail.com>"]
 
 [dependencies]
-gchemol = { git = "https://github.com/ybyygu/gchemol.git", tag="v0.0.34" }
+gchemol = { git = "https://github.com/ybyygu/gchemol.git", tag="v0.0.35" }
 #gchemol = {path = "/home/ybyygu/Workspace/Programming/gchemol-rs/gchemol/gchemol"}
 rand = "0.7"
 quicli = "0.4"
