@@ -109,6 +109,12 @@ where
         self
     }
 
+    /// The last n generations for termination criterion.
+    pub fn set_termination_nlast(&mut self, n: usize) {
+        assert!(n > 1, "invalid nlast value");
+        self.nlast = n;
+    }
+
     /// Evolves one step forward from seeds.
     ///
     /// # Parameters
