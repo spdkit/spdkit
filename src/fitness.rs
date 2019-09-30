@@ -9,6 +9,9 @@ use crate::individual::*;
 // base
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*base][base:1]]
+// avoid zero fitness value
+const EPSILON: f64 = 10e-8;
+
 /// Evaluate the fitness of individual in population based on objective_value of
 /// individual.
 ///
@@ -35,7 +38,10 @@ where
 {
     fn evaluate(&mut self, indvs: &[Individual<G>]) -> Vec<f64> {
         if let Some(score_ref) = indvs.iter().map(|indv| indv.objective_value()).fmin() {
-            indvs.iter().map(|x| x.objective_value() - score_ref).collect()
+            indvs
+                .iter()
+                .map(|x| x.objective_value() - score_ref + EPSILON)
+                .collect()
         } else {
             warn!("empty individual list!");
             vec![]
@@ -54,7 +60,10 @@ where
 {
     fn evaluate(&mut self, indvs: &[Individual<G>]) -> Vec<f64> {
         if let Some(score_ref) = indvs.iter().map(|indv| indv.objective_value()).fmax() {
-            indvs.iter().map(|x| score_ref - x.objective_value()).collect()
+            indvs
+                .iter()
+                .map(|x| score_ref - x.objective_value() + EPSILON)
+                .collect()
         } else {
             warn!("empty individual list!");
             vec![]
