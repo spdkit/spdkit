@@ -10,7 +10,7 @@
 //        AUTHOR:  Wenping Guo <ybyygu@gmail.com>
 //       LICENCE:  GPL version 2 or upper
 //       CREATED:  <2018-06-14 Thu 20:52>
-//       UPDATED:  <2019-09-18 Wed 11:24>
+//       UPDATED:  <2019-09-30 Mon 08:43>
 //===============================================================================#
 // header:1 ends here
 
@@ -178,6 +178,7 @@ pub mod prelude {
     pub use crate::individual::EvaluateObjectiveValue;
     pub use crate::random::*;
     pub use crate::operators::*;
+    pub use crate::gears::Breed;
 
     pub use crate::encoding::Mutate;
 }

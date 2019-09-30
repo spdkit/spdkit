@@ -208,21 +208,34 @@ where
     /// * return the number of individuals to be removed.
     ///
     pub fn survive(&mut self) -> usize {
+        // FIXME: adhoc
+        let threshold = 0.01;
         if self.is_oversized() {
-            let n_remove = self.size() - self.size_limit;
+            let n_old = self.size();
             let mut members: Vec<_> = self.members().collect();
             members.sort_by_fitness();
 
+            // FIXME: adhoc
+            let mut to_keep: Vec<_> = members.into_iter().enumerate().collect();
+            to_keep.dedup_by(|a, b| {
+                let (ma, mb) = (&a.1, &b.1);
+                let (va, vb) = (ma.objective_value(), mb.objective_value());
+                (va - vb).abs() < threshold
+            });
+            let n_remove = n_old - to_keep.len();
+            info!("removed {} duplicates", n_remove);
+
             let mut indvs = vec![];
             let mut values = vec![];
-            for m in members.into_iter().take(self.size_limit) {
+            for p in to_keep.into_iter().take(self.size_limit) {
+                let m = p.1;
                 indvs.push(m.individual.to_owned());
                 values.push(m.fitness_value());
             }
 
             self.individuals = indvs;
             self.fitness_values = values;
-            n_remove
+            n_old - self.size()
         } else {
             0
         }

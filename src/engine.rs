@@ -53,10 +53,9 @@ where
     F: EvaluateFitness<G>,
     R: Rng + Sized,
 {
-    // 1. create m new individuals from parent population.
-    let m = cur_population.size();
+    // 1. create new individuals from parent population.
     // 1.1 breed new genomes
-    let new_genomes = breeder.breed(m, cur_population, rng);
+    let new_genomes = breeder.breed(cur_population.size_limit(), cur_population, rng);
     // 1.2 create new individuals from genomes.
     let mut new_indvs = valuer.create_individuals(new_genomes);
     println!("bred {} new individuals", new_indvs.len());
