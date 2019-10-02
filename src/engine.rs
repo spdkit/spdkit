@@ -71,11 +71,17 @@ where
 
     // 2.2 create a new population from combined new individuals
     let nlimit = cur_population.size_limit();
-    let mut new_population = valuer.build_population(new_indvs).with_size_limit(nlimit);
+    let tmp_population = valuer.build_population(new_indvs).with_size_limit(nlimit);
+    let m = tmp_population.size();
 
-    // 2.3 remove `n` low quality individuals
-    let n = survivor.survive(&mut new_population, rng);
+    // 2.3 remove low quality individuals
+    let survived_indvs = survivor.survive(tmp_population, rng);
+    let n = m - survived_indvs.len();
     println!("removed {} bad individuals.", n);
+    let mut new_population = valuer
+        .build_population(survived_indvs)
+        .with_size_limit(nlimit);
+
     new_population.to_owned()
 }
 // core:1 ends here
