@@ -38,9 +38,11 @@ where
 {
     fn evaluate(&mut self, indvs: &[Individual<G>]) -> Vec<f64> {
         if let Some(score_ref) = indvs.iter().map(|indv| indv.objective_value()).fmin() {
+            // avoid zero value fitness
+            let score_ref = score_ref * (1.0 - EPSILON);
             indvs
                 .iter()
-                .map(|x| x.objective_value() - score_ref + EPSILON)
+                .map(|x| x.objective_value() - score_ref)
                 .collect()
         } else {
             warn!("empty individual list!");
@@ -60,9 +62,11 @@ where
 {
     fn evaluate(&mut self, indvs: &[Individual<G>]) -> Vec<f64> {
         if let Some(score_ref) = indvs.iter().map(|indv| indv.objective_value()).fmax() {
+            // avoid zero value fitness
+            let score_ref = score_ref * (1.0 + EPSILON);
             indvs
                 .iter()
-                .map(|x| score_ref - x.objective_value() + EPSILON)
+                .map(|x| score_ref - x.objective_value())
                 .collect()
         } else {
             warn!("empty individual list!");
