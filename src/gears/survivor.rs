@@ -14,8 +14,22 @@ use super::*;
 // base
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*base][base:1]]
-/// Member surviving by removing bad performing individuals
+/// Member supplanting by removing bad performing individuals.
 pub trait Survive<G: Genome>: Clone {
-    fn survive<R: Rng + Sized>(&mut self, population: &Population<G>, rng: &mut R) -> usize;
+    fn survive<R: Rng + Sized>(&mut self, population: &mut Population<G>, rng: &mut R) -> usize;
+}
+
+#[derive(Clone)]
+pub struct Survivor;
+
+impl<G> Survive<G> for Survivor
+where
+    G: Genome,
+{
+    fn survive<R: Rng + Sized>(&mut self, population: &mut Population<G>, _rng: &mut R) -> usize {
+        let n_old = population.size();
+        population.survive();
+        n_old - population.size()
+    }
 }
 // base:1 ends here

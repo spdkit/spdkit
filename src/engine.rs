@@ -6,12 +6,12 @@ use std::iter::FromIterator;
 use crate::common::*;
 use crate::encoding::*;
 use crate::fitness::*;
+use crate::gears::*;
 use crate::individual::*;
 use crate::operators::*;
 use crate::population::*;
 use crate::random::*;
 use crate::termination::*;
-use crate::gears::*;
 // imports:1 ends here
 
 // base
@@ -20,17 +20,19 @@ use crate::gears::*;
 use std::marker::PhantomData;
 
 /// Evolution engine.
-pub struct Engine<G, C, F, B>
+pub struct Engine<G, C, B, S, F>
 where
     G: Genome,
     C: EvaluateObjectiveValue<G>,
     B: Breed<G>,
+    S: Survive<G>,
     F: EvaluateFitness<G>,
 {
     mut_prob: f64,
 
     population: Option<Population<G>>,
     breeder: Option<B>,
+    survivor: Option<S>,
     valuer: Option<Valuer<G, F, C>>,
 
     nlast: usize,
@@ -40,9 +42,10 @@ where
 // core
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*core][core:1]]
-pub(crate) fn evolve_one_step<G, C, B, F, R>(
+pub(crate) fn evolve_one_step<G, C, B, S, F, R>(
     cur_population: &Population<G>,
     breeder: &mut B,
+    survivor: &mut S,
     valuer: &mut Valuer<G, F, C>,
     rng: &mut R,
 ) -> Population<G>
@@ -50,6 +53,7 @@ where
     G: Genome,
     C: EvaluateObjectiveValue<G>,
     B: Breed<G>,
+    S: Survive<G>,
     F: EvaluateFitness<G>,
     R: Rng + Sized,
 {
@@ -70,7 +74,7 @@ where
     let mut new_population = valuer.build_population(new_indvs).with_size_limit(nlimit);
 
     // 2.3 remove `n` low quality individuals
-    let n = new_population.survive();
+    let n = survivor.survive(&mut new_population, rng);
     println!("removed {} bad individuals.", n);
     new_population.to_owned()
 }
@@ -79,11 +83,12 @@ where
 // pub
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*pub][pub:1]]
-impl<G, C, F, B> Engine<G, C, F, B>
+impl<G, C, B, S, F> Engine<G, C, B, S, F>
 where
     G: Genome,
     C: EvaluateObjectiveValue<G>,
     B: Breed<G>,
+    S: Survive<G>,
     F: EvaluateFitness<G>,
 {
     pub fn new() -> Self {
@@ -93,6 +98,7 @@ where
             breeder: None,
             population: None,
             valuer: None,
+            survivor: None,
 
             nlast: 30,
         }
@@ -105,6 +111,11 @@ where
 
     pub fn with_breeder(mut self, b: B) -> Self {
         self.breeder = Some(b);
+        self
+    }
+
+    pub fn with_survivor(mut self, s: S) -> Self {
+        self.survivor = Some(s);
         self
     }
 
@@ -135,6 +146,7 @@ where
         let mut termination = RunningMean::new(self.nlast);
         let mut breeder = self.breeder.take().expect("no breeder");
         let mut valuer = self.valuer.take().expect("no valuer");
+        let mut survivor = self.survivor.take().expect("no survivor");
 
         // create individuals, build population.
         let indvs = valuer.create_individuals(seeds.to_vec());
@@ -149,8 +161,13 @@ where
                     // println!("{}", m);
                 }
             } else {
-                let new_population =
-                    evolve_one_step(&population, &mut breeder, &mut valuer, &mut *rng);
+                let new_population = evolve_one_step(
+                    &population,
+                    &mut breeder,
+                    &mut survivor,
+                    &mut valuer,
+                    &mut *rng,
+                );
 
                 population = new_population;
             }
@@ -209,6 +226,7 @@ mod test {
     use super::*;
     use crate::common::*;
     use crate::fitness;
+    use crate::gears::*;
     use crate::operators::selection::RouletteWheelSelection;
     use crate::operators::variation::OnePointCrossOver;
 
@@ -224,7 +242,13 @@ mod test {
             .with_fitness(fitness::Maximize)
             .with_creator(OneMax);
 
-        let mut engine = Engine::new().with_valuer(valuer).with_breeder(breeder);
+        // create a survivor gear
+        let survivor = Survivor;
+
+        let mut engine = Engine::new()
+            .with_valuer(valuer)
+            .with_breeder(breeder)
+            .with_survivor(survivor);
 
         let seeds = build_initial_genomes(10);
         for g in engine.evolve(&seeds).take(10) {
