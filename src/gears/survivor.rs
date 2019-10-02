@@ -24,7 +24,15 @@ pub trait Survive<G: Genome>: Clone {
 }
 
 #[derive(Clone)]
-pub struct Survivor;
+pub struct Survivor {
+    //
+}
+
+impl Default for Survivor {
+    fn default() -> Self {
+        Self {}
+    }
+}
 
 impl<G> Survive<G> for Survivor
 where

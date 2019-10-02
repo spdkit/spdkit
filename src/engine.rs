@@ -249,7 +249,7 @@ mod test {
             .with_creator(OneMax);
 
         // create a survivor gear
-        let survivor = Survivor;
+        let survivor = Survivor::default();
 
         let mut engine = Engine::new()
             .with_valuer(valuer)
