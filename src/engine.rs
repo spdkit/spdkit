@@ -19,8 +19,50 @@ use crate::termination::*;
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*base][base:1]]
 use std::marker::PhantomData;
 
-/// Evolution engine.
-pub struct Engine<G, C, B, S, F>
+pub trait Evolve<G, F, C>
+where
+    G: Genome,
+    F: EvaluateFitness<G>,
+    C: EvaluateObjectiveValue<G>,
+{
+    fn next_generation(
+        &mut self,
+        cur_population: &Population<G>,
+        valuer: &mut Valuer<G, F, C>,
+    ) -> Population<G>;
+}
+// base:1 ends here
+
+// core
+
+// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*core][core:1]]
+struct EvolutionAlgorithm<G, B, S>
+where
+    G: Genome,
+    B: Breed<G>,
+    S: Survive<G>,
+{
+    breeder: B,
+    survivor: S,
+    _g: PhantomData<G>,
+}
+
+impl<G, B, S> EvolutionAlgorithm<G, B, S>
+where
+    G: Genome,
+    B: Breed<G>,
+    S: Survive<G>,
+{
+    fn new(breeder: B, survivor: S) -> Self {
+        Self {
+            breeder,
+            survivor,
+            _g: PhantomData,
+        }
+    }
+}
+
+impl<G, C, B, S, F> Evolve<G, F, C> for EvolutionAlgorithm<G, B, S>
 where
     G: Genome,
     C: EvaluateObjectiveValue<G>,
@@ -28,21 +70,23 @@ where
     S: Survive<G>,
     F: EvaluateFitness<G>,
 {
-    mut_prob: f64,
-
-    population: Option<Population<G>>,
-    breeder: Option<B>,
-    survivor: Option<S>,
-    valuer: Option<Valuer<G, F, C>>,
-
-    nlast: usize,
+    fn next_generation(
+        &mut self,
+        cur_population: &Population<G>,
+        valuer: &mut Valuer<G, F, C>,
+    ) -> Population<G> {
+        let mut rng = get_rng!();
+        evolve_one_step(
+            cur_population,
+            &mut self.breeder,
+            &mut self.survivor,
+            valuer,
+            &mut *rng,
+        )
+    }
 }
-// base:1 ends here
 
-// core
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*core][core:1]]
-pub(crate) fn evolve_one_step<G, C, B, S, F, R>(
+fn evolve_one_step<G, C, B, S, F, R>(
     cur_population: &Population<G>,
     breeder: &mut B,
     survivor: &mut S,
@@ -89,46 +133,55 @@ where
 // pub
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*pub][pub:1]]
-impl<G, C, B, S, F> Engine<G, C, B, S, F>
+/// Evolution engine.
+pub struct Engine<G, E, F, C>
 where
     G: Genome,
-    C: EvaluateObjectiveValue<G>,
-    B: Breed<G>,
-    S: Survive<G>,
+    E: Evolve<G, F, C>,
     F: EvaluateFitness<G>,
+    C: EvaluateObjectiveValue<G>,
 {
-    pub fn new() -> Self {
+    nlast: usize,
+
+    algo: Option<E>,
+    valuer: Option<Valuer<G, F, C>>,
+    population: Option<Population<G>>,
+}
+
+impl<G, E, F, C> Engine<G, E, F, C>
+where
+    G: Genome,
+    E: Evolve<G, F, C>,
+    F: EvaluateFitness<G>,
+    C: EvaluateObjectiveValue<G>,
+{
+    pub fn create() -> Self {
         Self {
-            mut_prob: 0.1,
-
-            breeder: None,
-            population: None,
-            valuer: None,
-            survivor: None,
-
             nlast: 30,
+
+            algo: None,
+            valuer: None,
+            population: None,
         }
     }
 
-    pub fn with_valuer(mut self, valuer: Valuer<G, F, C>) -> Self {
-        self.valuer = Some(valuer);
-        self
-    }
-
-    pub fn with_breeder(mut self, b: B) -> Self {
-        self.breeder = Some(b);
-        self
-    }
-
-    pub fn with_survivor(mut self, s: S) -> Self {
-        self.survivor = Some(s);
+    /// Set core algorithm for evolution
+    pub fn algorithm(mut self, algo: E) -> Self {
+        self.algo = Some(algo);
         self
     }
 
     /// The last n generations for termination criterion.
-    pub fn set_termination_nlast(&mut self, n: usize) {
+    pub fn termination_nlast(mut self, n: usize) -> Self {
         assert!(n > 1, "invalid nlast value");
         self.nlast = n;
+        self
+    }
+
+    /// Set Valuer for evolution.
+    pub fn valuer(mut self, valuer: Valuer<G, F, C>) -> Self {
+        self.valuer = Some(valuer);
+        self
     }
 
     /// Evolves one step forward from seeds.
@@ -146,13 +199,9 @@ where
         &'a mut self,
         seeds: &[G],
     ) -> impl Iterator<Item = Result<Generation<G>>> + 'a {
-        let mut rng = get_rng!();
-        let mut ig = 0;
-
         let mut termination = RunningMean::new(self.nlast);
-        let mut breeder = self.breeder.take().expect("no breeder");
         let mut valuer = self.valuer.take().expect("no valuer");
-        let mut survivor = self.survivor.take().expect("no survivor");
+        let mut algo = self.algo.take().expect("no algo");
 
         // create individuals, build population.
         let indvs = valuer.create_individuals(seeds.to_vec());
@@ -160,6 +209,7 @@ where
         let mut population = valuer.build_population(indvs).with_size_limit(nlimit);
 
         // enter main loop
+        let mut ig = 0;
         std::iter::from_fn(move || {
             if ig == 0 {
                 println!("initial population:");
@@ -167,13 +217,7 @@ where
                     // println!("{}", m);
                 }
             } else {
-                let new_population = evolve_one_step(
-                    &population,
-                    &mut breeder,
-                    &mut survivor,
-                    &mut valuer,
-                    &mut *rng,
-                );
+                let new_population = algo.next_generation(&population, &mut valuer);
 
                 population = new_population;
             }
@@ -198,29 +242,6 @@ where
             }
         })
     }
-
-    // /// Run the simulation until termination conditions met.
-    // ///
-    // /// # Returns
-    // ///
-    // /// * return the final `Generation`.
-    // ///
-    // pub fn run_until<T: Terminate>(
-    //     &mut self,
-    //     genomes: &[G],
-    //     conditions: impl IntoIterator<Item = T>,
-    // ) -> Result<Generation<G>> {
-    //     let mut conditions: Vec<_> = conditions.into_iter().collect();
-    //     for g in self.evolve(genomes) {
-    //         let generation = g?;
-    //         for t in conditions.iter_mut() {
-    //             if t.meets(&generation) {
-    //                 return Ok(generation);
-    //             }
-    //         }
-    //     }
-    //     unreachable!()
-    // }
 }
 // pub:1 ends here
 
@@ -238,11 +259,6 @@ mod test {
 
     #[test]
     fn test_engine() -> Result<()> {
-        // create a breeder gear
-        let breeder = crate::gears::GeneticBreeder::new()
-            .with_crossover(OnePointCrossOver)
-            .with_selector(RouletteWheelSelection::new(2));
-
         // create a valuer gear
         let valuer = Valuer::new()
             .with_fitness(fitness::Maximize)
@@ -251,13 +267,21 @@ mod test {
         // create a survivor gear
         let survivor = Survivor::default();
 
-        let mut engine = Engine::new()
-            .with_valuer(valuer)
-            .with_breeder(breeder)
-            .with_survivor(survivor);
+        // create a breeder gear
+        let breeder = crate::gears::GeneticBreeder::new()
+            .with_crossover(OnePointCrossOver)
+            .with_selector(RouletteWheelSelection::new(2));
+
+        // setup the algorithm
+        let algo = EvolutionAlgorithm::new(breeder, survivor);
 
         let seeds = build_initial_genomes(10);
-        for g in engine.evolve(&seeds).take(10) {
+        for g in Engine::create()
+            .valuer(valuer)
+            .algorithm(algo)
+            .evolve(&seeds)
+            .take(10)
+        {
             let generation = g?;
             generation.summary();
         }
