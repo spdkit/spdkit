@@ -25,6 +25,7 @@ where
     F: EvaluateFitness<G>,
     C: EvaluateObjectiveValue<G>,
 {
+    // Define how to evolve to next generation.
     fn next_generation(
         &mut self,
         cur_population: &Population<G>,
@@ -36,7 +37,7 @@ where
 // core
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*core][core:1]]
-struct EvolutionAlgorithm<G, B, S>
+pub struct EvolutionAlgorithm<G, B, S>
 where
     G: Genome,
     B: Breed<G>,
@@ -53,7 +54,7 @@ where
     B: Breed<G>,
     S: Survive<G>,
 {
-    fn new(breeder: B, survivor: S) -> Self {
+    pub fn new(breeder: B, survivor: S) -> Self {
         Self {
             breeder,
             survivor,

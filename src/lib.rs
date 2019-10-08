@@ -10,7 +10,7 @@
 //        AUTHOR:  Wenping Guo <ybyygu@gmail.com>
 //       LICENCE:  GPL version 2 or upper
 //       CREATED:  <2018-06-14 Thu 20:52>
-//       UPDATED:  <2019-10-02 Wed 19:12>
+//       UPDATED:  <2019-10-09 Wed 19:14>
 //===============================================================================#
 // header:1 ends here
 
@@ -174,6 +174,8 @@ mod annealing;
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*prelude][prelude:1]]
 pub mod prelude {
+    pub use crate::engine::Evolve;
+    pub use crate::fitness::EvaluateFitness;
     pub use crate::gears::Breed;
     pub use crate::gears::Survive;
     pub use crate::individual::Create;
@@ -188,7 +190,7 @@ pub mod prelude {
 // exports
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*exports][exports:1]]
-pub use crate::engine::Engine;
+pub use crate::engine::{Engine, EvolutionAlgorithm};
 pub use crate::gears::GeneticBreeder;
 pub use crate::gears::Survivor;
 pub use crate::gears::Valuer;

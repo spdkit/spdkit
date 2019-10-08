@@ -180,6 +180,10 @@ pub struct TournamentSelection {
     n: usize,
 }
 impl TournamentSelection {
+    /// # Parameters
+    ///
+    /// * n: the total number of tournaments
+    ///
     pub fn new(n: usize) -> Self {
         Self { n }
     }

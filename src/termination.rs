@@ -120,13 +120,17 @@ where
 {
     pub fn summary(&self) {
         println!("# generation: {}", self.index);
+        let best = self.best_individual();
         println!(
-            " best individual objective value = {:}",
-            self.best_individual().objective_value()
+            " best individual {}: objective value = {:}",
+            best.genome(),
+            best.objective_value()
         );
 
         println!("population members:");
-        for m in self.population.members() {
+        let mut members: Vec<_> = self.population.members().collect();
+        members.sort_by_fitness();
+        for m in members {
             println!(" {:}", m);
         }
     }

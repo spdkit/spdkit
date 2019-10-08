@@ -162,10 +162,10 @@ where
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "indv {}, objective value: {}, fitness = {}",
+            "indv {}: fitness = {:5.2} objective value = {}",
             self.individual.genome(),
+            self.fitness,
             self.individual.objective_value(),
-            self.fitness
         )
     }
 }
