@@ -10,7 +10,7 @@
 //        AUTHOR:  Wenping Guo <ybyygu@gmail.com>
 //       LICENCE:  GPL version 2 or upper
 //       CREATED:  <2018-06-14 Thu 20:52>
-//       UPDATED:  <2019-10-09 Wed 19:14>
+//       UPDATED:  <2019-10-10 Thu 09:50>
 //===============================================================================#
 // header:1 ends here
 
@@ -178,7 +178,6 @@ pub mod prelude {
     pub use crate::fitness::EvaluateFitness;
     pub use crate::gears::Breed;
     pub use crate::gears::Survive;
-    pub use crate::individual::Create;
     pub use crate::individual::EvaluateObjectiveValue;
     pub use crate::operators::*;
     pub use crate::random::*;
