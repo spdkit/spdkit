@@ -10,7 +10,7 @@
 //        AUTHOR:  Wenping Guo <ybyygu@gmail.com>
 //       LICENCE:  GPL version 2 or upper
 //       CREATED:  <2018-06-14 Thu 20:52>
-//       UPDATED:  <2019-10-10 Thu 09:50>
+//       UPDATED:  <2019-10-11 Fri 16:47>
 //===============================================================================#
 // header:1 ends here
 
@@ -180,6 +180,7 @@ pub mod prelude {
     pub use crate::gears::Survive;
     pub use crate::individual::EvaluateObjectiveValue;
     pub use crate::operators::*;
+    pub use crate::population::SortMember;
     pub use crate::random::*;
 
     pub use crate::encoding::Mutate;
