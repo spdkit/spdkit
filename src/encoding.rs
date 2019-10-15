@@ -10,7 +10,7 @@ use crate::random::*;
 // base
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*base][base:1]]
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub struct Binary(Vec<bool>);
 
 impl crate::individual::Genome for Binary {}
