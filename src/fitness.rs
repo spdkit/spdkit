@@ -92,14 +92,12 @@ pub struct MinimizeEnergy {
 
 impl MinimizeEnergy {
     pub fn new(temperature: f64) -> Self {
-        assert!(
-            temperature.is_sign_positive(),
-            "temperature cannot be negative!"
-        );
+        assert!(temperature.is_sign_positive(), "temperature cannot be negative!");
 
         Self {
             conversion: 96.0,
-            annealer: Annealer::new(temperature * 10.0, temperature),
+            // FIXME: adhoc hacking
+            annealer: Annealer::new(temperature * 10.0, temperature).cooling_rate(0.99),
             temperature,
         }
     }
