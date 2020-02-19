@@ -10,13 +10,15 @@
 //        AUTHOR:  Wenping Guo <ybyygu@gmail.com>
 //       LICENCE:  GPL version 2 or upper
 //       CREATED:  <2018-06-14 Thu 20:52>
-//       UPDATED:  <2019-10-11 Fri 16:47>
+//       UPDATED:  <2020-02-19 Wed 17:56>
 //===============================================================================#
 // header:1 ends here
 
 // base
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*base][base:1]]
+// FIXME: remove?
+
 #[macro_use]
 extern crate lazy_static;
 
@@ -37,17 +39,29 @@ pub mod common {
     }
 
     // https://stackoverflow.com/questions/43921436/extend-iterator-with-a-mean-method
-    pub trait FloatIteratorExt {
-        fn fmax(mut self) -> Option<f64>;
-        fn fmin(mut self) -> Option<f64>;
-        fn imax(mut self) -> Option<(usize, f64)>;
-        fn imin(mut self) -> Option<(usize, f64)>;
+    pub trait FloatIteratorExt
+    where
+        Self: std::marker::Sized,
+    {
+        fn fmax(mut self) -> Option<f64> {
+            todo!()
+        }
+        fn fmin(mut self) -> Option<f64> {
+            todo!()
+        }
+        fn imax(mut self) -> Option<(usize, f64)> {
+            todo!()
+        }
+        fn imin(mut self) -> Option<(usize, f64)> {
+            todo!()
+        }
     }
 
     impl<F, T> FloatIteratorExt for T
     where
         T: Iterator<Item = F>,
         F: std::borrow::Borrow<f64>,
+        Self: std::marker::Sized,
     {
         /// Returns the minimum element of an iterator. Return None if the
         /// iterator is empty.
@@ -116,14 +130,12 @@ pub mod common {
 
     /// For sort values in maximum first order.
     pub fn float_ordering_maximize(fi: &f64, fj: &f64) -> std::cmp::Ordering {
-        fj.partial_cmp(&fi)
-            .unwrap_or_else(|| local_float_cmp!(fi, fj))
+        fj.partial_cmp(&fi).unwrap_or_else(|| local_float_cmp!(fi, fj))
     }
 
     /// For sort values in minimum first order.
     pub fn float_ordering_minimize(fi: &f64, fj: &f64) -> std::cmp::Ordering {
-        fi.partial_cmp(&fj)
-            .unwrap_or_else(|| local_float_cmp!(fi, fj))
+        fi.partial_cmp(&fj).unwrap_or_else(|| local_float_cmp!(fi, fj))
     }
 
     #[test]
