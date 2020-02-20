@@ -3,7 +3,7 @@
 # [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*cargo][cargo:1]]
 [package]
 name = "spdkit"
-version = "0.0.17"
+version = "0.0.18"
 edition = "2018"
 authors = ["Wenping Guo <ybyygu@gmail.com>"]
 description = "spdkit: Structure Predication Development Kit"
@@ -13,12 +13,9 @@ license = "MIT OR Apache-2.0"
 exclude = ["images/*", "docs/*", "ltxpng/*", "data/*"]
 
 [dependencies]
-gchemol = { version = ">=0.0.39", features=["adhoc"] }
-vecfx = "0.1"
-gut = "0.1"
 rand = "0.7"
 lazy_static = "1.3"
-
-# TODO: remove
-quicli = "0.4"
+vecfx = "0.1"
+gut = {version="0.1", package="gchemol-gut"}
+gchemol = { version = ">=0.0.39", features=["adhoc"] }
 # cargo:1 ends here

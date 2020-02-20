@@ -10,7 +10,7 @@
 //        AUTHOR:  Wenping Guo <ybyygu@gmail.com>
 //       LICENCE:  GPL version 2 or upper
 //       CREATED:  <2018-06-14 Thu 20:52>
-//       UPDATED:  <2020-02-19 Wed 17:56>
+//       UPDATED:  <2020-02-20 Thu 08:38>
 //===============================================================================#
 // header:1 ends here
 
@@ -23,8 +23,7 @@
 extern crate lazy_static;
 
 pub mod common {
-    pub use quicli::prelude::*;
-    pub type Result<T> = ::std::result::Result<T, Error>;
+    pub use gut::prelude::*;
 
     // Arbitrarily decide the order of NaNs
     macro_rules! local_float_cmp {

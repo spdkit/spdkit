@@ -84,8 +84,8 @@ where
 // create
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*create][create:1]]
-use quicli::prelude::IntoParallelIterator;
-use quicli::prelude::ParallelIterator;
+use gut::prelude::IntoParallelIterator;
+use gut::prelude::ParallelIterator;
 
 /// blanket implementation for creating new individuals from genomes
 pub(crate) trait Create<G>
