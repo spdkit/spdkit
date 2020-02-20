@@ -27,14 +27,14 @@ where
     genome: G,
 }
 
-/// Evaluate the raw score of individual.
+/// Evaluate the objective value of an individual.
 ///
 /// Potentially expensive operation.
 pub trait EvaluateObjectiveValue<G>: Clone + std::fmt::Debug
 where
     G: Genome,
 {
-    fn evaluate(&mut self, genome: &G) -> f64;
+    fn evaluate(&self, genome: &G) -> f64;
 }
 
 impl<G> Individual<G>
@@ -84,14 +84,24 @@ where
 // create
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*create][create:1]]
+use gut::prelude::IntoParallelIterator;
+use gut::prelude::ParallelIterator;
+
 /// blanket implementation for creating new individuals from genomes
-pub trait Create<G: Genome> {
-    fn create(&mut self, genomes: impl IntoIterator<Item = G>) -> Vec<Individual<G>>;
+pub(crate) trait Create<G>
+where
+    G: Genome,
+{
+    fn create(&self, genomes: impl IntoIterator<Item = G>) -> Vec<Individual<G>>;
 }
 
-impl<G: Genome, T: EvaluateObjectiveValue<G>> Create<G> for T {
+impl<G, T> Create<G> for T
+where
+    G: Genome,
+    T: EvaluateObjectiveValue<G>,
+{
     /// Create individuals from genomes.
-    fn create(&mut self, genomes: impl IntoIterator<Item = G>) -> Vec<Individual<G>> {
+    fn create(&self, genomes: impl IntoIterator<Item = G>) -> Vec<Individual<G>> {
         genomes
             .into_iter()
             .map(|g| {
@@ -114,7 +124,7 @@ impl<G: Genome, T: EvaluateObjectiveValue<G>> Create<G> for T {
 pub struct OneMax;
 
 impl EvaluateObjectiveValue<Binary> for OneMax {
-    fn evaluate(&mut self, genome: &Binary) -> f64 {
+    fn evaluate(&self, genome: &Binary) -> f64 {
         let s: usize = genome.iter().filter(|&b| *b).count();
         s as f64
     }

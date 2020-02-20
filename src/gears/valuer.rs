@@ -53,8 +53,8 @@ where
     }
 
     /// Create individuals from genomes.
-    pub fn create_individuals(&mut self, genomes: Vec<G>) -> Vec<Individual<G>> {
-        if let Some(creator) = &mut self.creator {
+    pub fn create_individuals(&self, genomes: Vec<G>) -> Vec<Individual<G>> {
+        if let Some(creator) = &self.creator {
             creator.create(genomes)
         } else {
             panic!("creator not set!");

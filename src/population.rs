@@ -198,6 +198,44 @@ where
 }
 // members:1 ends here
 
+// survive
+
+// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*survive][survive:1]]
+impl<G> Population<G>
+where
+    G: Genome,
+{
+    /// Remove some bad performing individuals to fit the population size limit
+    /// constrain.
+    ///
+    /// # Returns
+    ///
+    /// * return the number of individuals to be removed.
+    ///
+    pub fn survive(&mut self) -> usize {
+        if self.is_oversized() {
+            let n_old = self.size();
+            let mut members: Vec<_> = self.members().collect();
+            members.sort_by_fitness();
+            let to_keep: Vec<_> = members.into_iter().take(self.size_limit).collect();
+
+            let mut indvs = vec![];
+            let mut values = vec![];
+            for m in to_keep {
+                indvs.push(m.individual.to_owned());
+                values.push(m.fitness_value());
+            }
+
+            self.individuals = indvs;
+            self.fitness_values = values;
+            n_old - self.size()
+        } else {
+            0
+        }
+    }
+}
+// survive:1 ends here
+
 // test
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*test][test:1]]

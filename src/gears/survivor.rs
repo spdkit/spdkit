@@ -25,18 +25,32 @@ pub trait Survive<G: Genome>: Clone {
 
 #[derive(Clone)]
 pub struct Survivor {
-    //
+    /// Whether to remove duplicates in population.
+    remove_duplicates: bool,
+}
+
+impl Survivor {
+    pub fn create() -> Self {
+        Self::default()
+    }
+
+    pub fn remove_duplicates(mut self, r: bool) -> Self {
+        self.remove_duplicates = r;
+        self
+    }
 }
 
 impl Default for Survivor {
     fn default() -> Self {
-        Self {}
+        Self {
+            remove_duplicates: false,
+        }
     }
 }
 
 impl<G> Survive<G> for Survivor
 where
-    G: Genome,
+    G: Genome + Ord,
 {
     fn survive<R: Rng + Sized>(
         &mut self,
@@ -44,6 +58,11 @@ where
         rng: &mut R,
     ) -> Vec<Individual<G>> {
         let mut members: Vec<_> = population.members().collect();
+        if self.remove_duplicates {
+            members.sort_by(|a, b| a.genome().cmp(b.genome()));
+            members.dedup_by(|a, b| a.genome() == b.genome());
+        }
+
         members.sort_by_fitness();
         members
             .into_iter()

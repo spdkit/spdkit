@@ -3,14 +3,19 @@
 # [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*cargo][cargo:1]]
 [package]
 name = "spdkit"
-version = "0.0.15"
+version = "0.0.18"
 edition = "2018"
 authors = ["Wenping Guo <ybyygu@gmail.com>"]
+description = "spdkit: Structure Predication Development Kit"
+homepage = "https://github.com/spdkit/spdkit"
+repository = "https://github.com/spdkit/spdkit"
+license = "MIT OR Apache-2.0"
+exclude = ["images/*", "docs/*", "ltxpng/*", "data/*"]
 
 [dependencies]
-gchemol = { git = "https://github.com/ybyygu/gchemol.git", tag="v0.0.35" }
-#gchemol = {path = "/home/ybyygu/Workspace/Programming/gchemol-rs/gchemol/gchemol"}
 rand = "0.7"
-quicli = "0.4"
 lazy_static = "1.3"
+vecfx = "0.1"
+gut = {version="0.1", package="gchemol-gut"}
+gchemol = { version = ">=0.0.39", features=["adhoc"] }
 # cargo:1 ends here
