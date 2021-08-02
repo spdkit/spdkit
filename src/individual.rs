@@ -1,23 +1,17 @@
-// imports
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*imports][imports:1]]
+// [[file:../spdkit.note::*imports][imports:1]]
 use std::marker::PhantomData;
 
 use crate::encoding::*;
 use crate::random::*;
 // imports:1 ends here
 
-// genome
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*genome][genome:1]]
+// [[file:../spdkit.note::*genome][genome:1]]
 pub trait Genome: Clone + Send {
     //
 }
 // genome:1 ends here
 
-// individual
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*individual][individual:1]]
+// [[file:../spdkit.note::*individual][individual:1]]
 #[derive(Clone, Debug)]
 pub struct Individual<G>
 where
@@ -81,9 +75,7 @@ where
 }
 // individual:1 ends here
 
-// create
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*create][create:1]]
+// [[file:../spdkit.note::*create][create:1]]
 use gut::prelude::IntoParallelIterator;
 use gut::prelude::ParallelIterator;
 
@@ -116,10 +108,7 @@ where
 }
 // create:1 ends here
 
-// onemax
-// for test purpose
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*onemax][onemax:1]]
+// [[file:../spdkit.note::*onemax][onemax:1]]
 #[derive(Clone, Debug)]
 pub struct OneMax;
 
@@ -131,9 +120,7 @@ impl EvaluateObjectiveValue<Binary> for OneMax {
 }
 // onemax:1 ends here
 
-// test
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*test][test:1]]
+// [[file:../spdkit.note::*test][test:1]]
 #[cfg(test)]
 mod test {
     use super::*;

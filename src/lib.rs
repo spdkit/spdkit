@@ -1,6 +1,4 @@
-// header
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*header][header:1]]
+// [[file:../spdkit.note::*header][header:1]]
 //===============================================================================#
 //   DESCRIPTION:  spdkit: Structure Predication Development Kit
 //
@@ -10,13 +8,11 @@
 //        AUTHOR:  Wenping Guo <ybyygu@gmail.com>
 //       LICENCE:  GPL version 2 or upper
 //       CREATED:  <2018-06-14 Thu 20:52>
-//       UPDATED:  <2020-02-20 Thu 08:38>
+//       UPDATED:  <2021-07-01 Thu 17:14>
 //===============================================================================#
 // header:1 ends here
 
-// base
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*base][base:1]]
+// [[file:../spdkit.note::*base][base:1]]
 // FIXME: remove?
 
 #[macro_use]
@@ -163,9 +159,7 @@ pub mod common {
 }
 // base:1 ends here
 
-// mods
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*mods][mods:1]]
+// [[file:../spdkit.note::*mods][mods:1]]
 #[macro_use]
 pub mod random; // the mod order is important for get_rng! macro
 
@@ -180,10 +174,7 @@ pub mod termination;
 mod annealing;
 // mods:1 ends here
 
-// prelude
-// exports traits
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*prelude][prelude:1]]
+// [[file:../spdkit.note::*prelude][prelude:1]]
 pub mod prelude {
     pub use crate::engine::Evolve;
     pub use crate::fitness::EvaluateFitness;
@@ -198,9 +189,7 @@ pub mod prelude {
 }
 // prelude:1 ends here
 
-// exports
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*exports][exports:1]]
+// [[file:../spdkit.note::*exports][exports:1]]
 pub use crate::engine::{Engine, EvolutionAlgorithm};
 pub use crate::gears::GeneticBreeder;
 pub use crate::gears::Survivor;

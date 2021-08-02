@@ -1,6 +1,4 @@
-// imports
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*imports][imports:1]]
+// [[file:../../spdkit.note::*imports][imports:1]]
 use crate::common::*;
 use crate::individual::*;
 use crate::population::*;
@@ -9,9 +7,7 @@ use crate::random::*;
 use super::*;
 // imports:1 ends here
 
-// random selection
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*random%20selection][random selection:1]]
+// [[file:../../spdkit.note::*random selection][random selection:1]]
 /// Select individuals from population at random.
 #[derive(Debug, Clone)]
 pub struct RandomSelection {
@@ -66,9 +62,7 @@ impl SelectionOperator for RandomSelection {
 }
 // random selection:1 ends here
 
-// elitist selection
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*elitist%20selection][elitist selection:1]]
+// [[file:../../spdkit.note::*elitist selection][elitist selection:1]]
 /// ElitistSelection is a simple selection strategy where a limited number of
 /// individuals with the best fitness values are chosen.
 #[derive(Debug, Clone)]
@@ -108,9 +102,7 @@ impl SelectionOperator for ElitistSelection {
 }
 // elitist selection:1 ends here
 
-// roulette wheel
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*roulette%20wheel][roulette wheel:1]]
+// [[file:../../spdkit.note::*roulette wheel][roulette wheel:1]]
 /// Fitness proportionate selection.
 ///
 /// # Reference
@@ -164,9 +156,7 @@ impl SelectionOperator for RouletteWheelSelection {
 }
 // roulette wheel:1 ends here
 
-// tournament selection
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*tournament%20selection][tournament selection:1]]
+// [[file:../../spdkit.note::*tournament selection][tournament selection:1]]
 /// Divide the populations into multiple parts and select the best one from each
 /// part in a deterministic way.
 ///
@@ -227,9 +217,7 @@ impl SelectionOperator for TournamentSelection {
 }
 // tournament selection:1 ends here
 
-// stochastic universal sampling
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*stochastic%20universal%20sampling][stochastic universal sampling:1]]
+// [[file:../../spdkit.note::*stochastic universal sampling][stochastic universal sampling:1]]
 /// Select the *n* individuals among the input *individuals*. The selection is
 /// made by using a single random value to sample all of the individuals by
 /// choosing them at evenly spaced intervals. The list returned contains
@@ -290,8 +278,6 @@ impl SelectionOperator for StochasticUniversalSampling {
 }
 // stochastic universal sampling:1 ends here
 
-// test
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*test][test:1]]
+// [[file:../../spdkit.note::*test][test:1]]
 
 // test:1 ends here

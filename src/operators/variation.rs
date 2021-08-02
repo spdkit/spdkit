@@ -1,6 +1,4 @@
-// imports
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*imports][imports:1]]
+// [[file:../../spdkit.note::*imports][imports:1]]
 use crate::common::*;
 use crate::encoding::*;
 use crate::individual::*;
@@ -10,9 +8,7 @@ use crate::random::*;
 use super::*;
 // imports:1 ends here
 
-// mutation
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*mutation][mutation:1]]
+// [[file:../../spdkit.note::*mutation][mutation:1]]
 #[derive(Debug, Clone)]
 /// This mutation method simply changes (flips) randomly selected bits.
 pub struct FlipBitMutation {
@@ -50,9 +46,7 @@ impl VariationOperator<Binary> for FlipBitMutation {
 }
 // mutation:1 ends here
 
-// onepoint crossover
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*onepoint%20crossover][onepoint crossover:1]]
+// [[file:../../spdkit.note::*onepoint crossover][onepoint crossover:1]]
 /// A point on both parents' chromosomes is picked randomly, and designated a
 /// 'crossover point'. Bits to the right of that point are swapped between the
 /// two parent chromosomes. This results in two offspring, each carrying some
@@ -105,9 +99,7 @@ fn test_cx_onepoint() {
 }
 // onepoint crossover:1 ends here
 
-// triadic crossover
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*triadic%20crossover][triadic crossover:1]]
+// [[file:../../spdkit.note::*triadic crossover][triadic crossover:1]]
 #[derive(Debug, Clone)]
 pub struct TriadicCrossOver;
 

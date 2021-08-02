@@ -1,9 +1,7 @@
-# cargo
-
-# [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*cargo][cargo:1]]
+# [[file:spdkit.note::*cargo][cargo:1]]
 [package]
 name = "spdkit"
-version = "0.0.18"
+version = "0.0.19"
 edition = "2018"
 authors = ["Wenping Guo <ybyygu@gmail.com>"]
 description = "spdkit: Structure Predication Development Kit"
@@ -13,9 +11,9 @@ license = "MIT OR Apache-2.0"
 exclude = ["images/*", "docs/*", "ltxpng/*", "data/*"]
 
 [dependencies]
-rand = "0.7"
+rand = "0.8"
 lazy_static = "1.3"
 vecfx = "0.1"
 gut = {version="0.1", package="gchemol-gut"}
-gchemol = { version = ">=0.0.39", features=["adhoc"] }
+gchemol = { version = ">=0.0.41", features=["adhoc"] }
 # cargo:1 ends here

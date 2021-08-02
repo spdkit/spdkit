@@ -1,6 +1,4 @@
-// imports
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*imports][imports:1]]
+// [[file:../../spdkit.note::*imports][imports:1]]
 use std::marker::PhantomData;
 
 use crate::common::*;
@@ -106,8 +104,6 @@ where
     }
 }
 
-// hypermutation
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*hypermutation][hypermutation:1]]
+// [[file:../../spdkit.note::*hypermutation][hypermutation:1]]
 
 // hypermutation:1 ends here

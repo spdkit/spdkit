@@ -1,15 +1,11 @@
-// imports
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*imports][imports:1]]
+// [[file:../spdkit.note::*imports][imports:1]]
 use std::fmt::Display;
 use std::iter::FromIterator;
 
 use crate::random::*;
 // imports:1 ends here
 
-// base
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*base][base:1]]
+// [[file:../spdkit.note::*base][base:1]]
 #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub struct Binary(Vec<bool>);
 
@@ -72,15 +68,11 @@ impl Binary {
 }
 // base:1 ends here
 
-// molecule
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*molecule][molecule:1]]
+// [[file:../spdkit.note::*molecule][molecule:1]]
 impl crate::individual::Genome for gchemol::Molecule {}
 // molecule:1 ends here
 
-// mutate
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*mutate][mutate:1]]
+// [[file:../spdkit.note::*mutate][mutate:1]]
 pub trait Mutate {
     /// Mutate `n` bits randomly.
     fn mutate<R: Rng + Sized>(&mut self, n: usize, rng: &mut R);
@@ -96,9 +88,7 @@ impl Mutate for Binary {
 }
 // mutate:1 ends here
 
-// test
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*test][test:1]]
+// [[file:../spdkit.note::*test][test:1]]
 #[test]
 fn test_binary() {
     let x = Binary(vec![true, false, true]);

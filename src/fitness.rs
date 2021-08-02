@@ -1,14 +1,10 @@
-// imports
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*imports][imports:1]]
+// [[file:../spdkit.note::*imports][imports:1]]
 use crate::common::*;
 use crate::encoding::Binary;
 use crate::individual::*;
 // imports:1 ends here
 
-// base
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*base][base:1]]
+// [[file:../spdkit.note::*base][base:1]]
 // avoid zero fitness value
 const EPSILON: f64 = 10e-8;
 
@@ -76,9 +72,7 @@ where
 }
 // base:1 ends here
 
-// minimize energy
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*minimize%20energy][minimize energy:1]]
+// [[file:../spdkit.note::*minimize energy][minimize energy:1]]
 use crate::annealing::Annealer;
 
 /// Minimize energy with Boltzmann distribution. The lower of the energy, the

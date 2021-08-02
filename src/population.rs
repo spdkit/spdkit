@@ -1,6 +1,4 @@
-// imports
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*imports][imports:1]]
+// [[file:../spdkit.note::*imports][imports:1]]
 use std::marker::PhantomData;
 
 use crate::common::*;
@@ -8,9 +6,7 @@ use crate::fitness::*;
 use crate::individual::*;
 // imports:1 ends here
 
-// base
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*base][base:1]]
+// [[file:../spdkit.note::*base][base:1]]
 /// A population is a collection of evaluated individuals (fitness).
 #[derive(Clone, Debug)]
 pub struct Population<G>
@@ -102,10 +98,7 @@ where
 }
 // base:1 ends here
 
-// members
-// sort members in the order of best fitness first.
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*members][members:1]]
+// [[file:../spdkit.note::*members][members:1]]
 /// A member is a view of individual with its evaluated fitness value in parent
 /// Population.
 #[derive(Debug, Clone)]
@@ -198,9 +191,7 @@ where
 }
 // members:1 ends here
 
-// survive
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*survive][survive:1]]
+// [[file:../spdkit.note::*survive][survive:1]]
 impl<G> Population<G>
 where
     G: Genome,
@@ -236,9 +227,7 @@ where
 }
 // survive:1 ends here
 
-// test
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*test][test:1]]
+// [[file:../spdkit.note::*test][test:1]]
 #[cfg(test)]
 mod test {
     use super::*;

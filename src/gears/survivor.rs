@@ -1,6 +1,4 @@
-// imports
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*imports][imports:1]]
+// [[file:../../spdkit.note::*imports][imports:1]]
 use crate::common::*;
 use crate::encoding::*;
 use crate::individual::*;
@@ -11,16 +9,10 @@ use crate::random::*;
 use super::*;
 // imports:1 ends here
 
-// base
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*base][base:1]]
+// [[file:../../spdkit.note::*base][base:1]]
 /// Member supplanting by removing bad performing individuals.
 pub trait Survive<G: Genome>: Clone {
-    fn survive<R: Rng + Sized>(
-        &mut self,
-        population: Population<G>,
-        rng: &mut R,
-    ) -> Vec<Individual<G>>;
+    fn survive<R: Rng + Sized>(&mut self, population: Population<G>, rng: &mut R) -> Vec<Individual<G>>;
 }
 
 #[derive(Clone)]
@@ -52,11 +44,7 @@ impl<G> Survive<G> for Survivor
 where
     G: Genome + Ord,
 {
-    fn survive<R: Rng + Sized>(
-        &mut self,
-        population: Population<G>,
-        rng: &mut R,
-    ) -> Vec<Individual<G>> {
+    fn survive<R: Rng + Sized>(&mut self, population: Population<G>, rng: &mut R) -> Vec<Individual<G>> {
         let mut members: Vec<_> = population.members().collect();
         if self.remove_duplicates {
             members.sort_by(|a, b| a.genome().cmp(b.genome()));

@@ -1,6 +1,4 @@
-// base
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*base][base:1]]
+// [[file:../spdkit.note::*base][base:1]]
 /// Simulated annealing.
 #[derive(Clone, Debug)]
 pub struct Annealer {
