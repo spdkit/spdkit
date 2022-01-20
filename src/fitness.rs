@@ -36,10 +36,7 @@ where
         if let Some(score_ref) = indvs.iter().map(|indv| indv.objective_value()).fmin() {
             // avoid zero value fitness
             let score_ref = score_ref * (1.0 - EPSILON);
-            indvs
-                .iter()
-                .map(|x| x.objective_value() - score_ref)
-                .collect()
+            indvs.iter().map(|x| x.objective_value() - score_ref).collect()
         } else {
             warn!("empty individual list!");
             vec![]
@@ -60,10 +57,7 @@ where
         if let Some(score_ref) = indvs.iter().map(|indv| indv.objective_value()).fmax() {
             // avoid zero value fitness
             let score_ref = score_ref * (1.0 + EPSILON);
-            indvs
-                .iter()
-                .map(|x| score_ref - x.objective_value())
-                .collect()
+            indvs.iter().map(|x| score_ref - x.objective_value()).collect()
         } else {
             warn!("empty individual list!");
             vec![]

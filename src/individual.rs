@@ -98,10 +98,7 @@ where
             .into_iter()
             .map(|g| {
                 let raw_score = self.evaluate(&g);
-                Individual {
-                    genome: g,
-                    raw_score,
-                }
+                Individual { genome: g, raw_score }
             })
             .collect()
     }
@@ -128,18 +125,11 @@ mod test {
 
     #[test]
     fn test() {
-        let codes: Vec<_> = vec!["10110", "01010"]
-            .iter()
-            .map(|x| Binary::from_str(x))
-            .collect();
+        let codes: Vec<_> = vec!["10110", "01010"].iter().map(|x| Binary::from_str(x)).collect();
 
         let indvs = OneMax.create(codes);
         for indv in indvs.iter() {
-            println!(
-                "indv {:}, objective value = {}",
-                indv.genome(),
-                indv.objective_value()
-            );
+            println!("indv {:}, objective value = {}", indv.genome(), indv.objective_value());
         }
     }
 }

@@ -35,10 +35,7 @@ impl FlipBitMutation {
 
 impl VariationOperator<Binary> for FlipBitMutation {
     fn breed_from<R: Rng + Sized>(&self, members: &[Member<Binary>], rng: &mut R) -> Vec<Binary> {
-        let mut genomes: Vec<_> = members
-            .iter()
-            .map(|m| m.genome().to_owned())
-            .collect();
+        let mut genomes: Vec<_> = members.iter().map(|m| m.genome().to_owned()).collect();
         self.mutate_binary(&mut genomes, rng);
 
         genomes
@@ -84,10 +81,7 @@ fn test_cx_onepoint() {
     // get global rng
     let mut rng = get_rng!();
 
-    let genomes: Vec<_> = vec!["10111", "01011"]
-        .iter()
-        .map(|s| Binary::from_str(s))
-        .collect();
+    let genomes: Vec<_> = vec!["10111", "01011"].iter().map(|s| Binary::from_str(s)).collect();
 
     let indvs = crate::individual::OneMax.create(genomes);
     let mut fitness = crate::fitness::Maximize;

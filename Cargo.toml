@@ -1,8 +1,8 @@
-# [[file:spdkit.note::*cargo][cargo:1]]
+# [[file:spdkit.note::d9a471e3][d9a471e3]]
 [package]
 name = "spdkit"
 version = "0.0.19"
-edition = "2018"
+edition = "2021"
 authors = ["Wenping Guo <ybyygu@gmail.com>"]
 description = "spdkit: Structure Predication Development Kit"
 homepage = "https://github.com/spdkit/spdkit"
@@ -16,4 +16,4 @@ lazy_static = "1.3"
 vecfx = "0.1"
 gut = {version="0.1", package="gchemol-gut"}
 gchemol = { version = ">=0.0.41", features=["adhoc"] }
-# cargo:1 ends here
+# d9a471e3 ends here

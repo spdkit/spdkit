@@ -2,8 +2,8 @@
 
 // [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*imports][imports:1]]
 use crate::common::*;
-use crate::individual::*;
 use crate::fitness::*;
+use crate::individual::*;
 use crate::population::*;
 // imports:1 ends here
 

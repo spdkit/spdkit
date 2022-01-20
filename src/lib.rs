@@ -163,6 +163,7 @@ pub mod common {
 #[macro_use]
 pub mod random; // the mod order is important for get_rng! macro
 
+mod annealing;
 pub mod encoding;
 pub mod engine;
 pub mod fitness;
@@ -171,7 +172,6 @@ pub mod individual;
 pub mod operators;
 pub mod population;
 pub mod termination;
-mod annealing;
 // mods:1 ends here
 
 // [[file:../spdkit.note::*prelude][prelude:1]]

@@ -9,12 +9,7 @@ use super::*;
 pub struct FullReplacement;
 
 impl ReplacementOperator for FullReplacement {
-    fn remove_from<G: Genome, R: Rng + Sized>(
-        &self,
-        n: usize,
-        population: &mut Population<G>,
-        rng: &mut R,
-    ) {
+    fn remove_from<G: Genome, R: Rng + Sized>(&self, n: usize, population: &mut Population<G>, rng: &mut R) {
         unimplemented!()
     }
 }

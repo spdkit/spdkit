@@ -4,10 +4,10 @@
 use std::marker::PhantomData;
 
 use crate::common::*;
+use crate::fitness::*;
 use crate::individual::*;
 use crate::operators::*;
 use crate::population::*;
-use crate::fitness::*;
 
 use super::*;
 // imports:1 ends here

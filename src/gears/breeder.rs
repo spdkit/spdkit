@@ -76,12 +76,7 @@ where
     S: SelectionOperator,
 {
     /// Breed `m` new genomes from parent population.
-    fn breed<R: Rng + Sized>(
-        &mut self,
-        m: usize,
-        population: &Population<G>,
-        rng: &mut R,
-    ) -> Vec<G> {
+    fn breed<R: Rng + Sized>(&mut self, m: usize, population: &Population<G>, rng: &mut R) -> Vec<G> {
         // let mut crossover = self.crossover.take().expect("breeder has no crossover");
         let crossover = self.crossover.as_mut().expect("breeder has no crossover.");
         let selector = self.selector.as_mut().expect("breeder has no selector");

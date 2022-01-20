@@ -172,10 +172,7 @@ where
         self.individuals
             .iter()
             .zip(self.fitness_values.iter())
-            .map(|(individual, &fitness)| Member {
-                individual,
-                fitness,
-            })
+            .map(|(individual, &fitness)| Member { individual, fitness })
     }
 
     /// Return a member view of the best individual in this population.
@@ -235,10 +232,7 @@ mod test {
 
     #[test]
     fn test() {
-        let keys: Vec<_> = vec!["10110", "01010", "11011"]
-            .iter()
-            .map(|x| Binary::from_str(x))
-            .collect();
+        let keys: Vec<_> = vec!["10110", "01010", "11011"].iter().map(|x| Binary::from_str(x)).collect();
 
         let mut fitness = crate::fitness::Maximize;
         let indvs = crate::individual::OneMax.create(keys);

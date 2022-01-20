@@ -33,10 +33,7 @@ impl Annealer {
 
     /// Set cooling rate.
     pub fn cooling_rate(mut self, r: f64) -> Self {
-        assert!(
-            r > 0.0 && r < 1.0,
-            "cooling rate should be a number in range 0..1"
-        );
+        assert!(r > 0.0 && r < 1.0, "cooling rate should be a number in range 0..1");
 
         self.cooling_rate = r;
         self
