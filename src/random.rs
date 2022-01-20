@@ -1,14 +1,10 @@
-// imports
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*imports][imports:1]]
+// [[file:../spdkit.note::*imports][imports:1]]
 use std::sync::Mutex;
 
 use crate::common::*;
 // imports:1 ends here
 
-// base
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*base][base:1]]
+// [[file:../spdkit.note::6594d8a9][6594d8a9]]
 pub use rand::prelude::*;
 
 // To not cause trouble, make sure one RNG per thread
@@ -45,7 +41,7 @@ mod test {
 
         let mut rng = get_rng!();
         rng.gen::<i32>();
-        assert_eq!(rng.gen_range(0, 1), 0);
+        assert_eq!(rng.gen_range(0..1), 0);
     }
 }
-// base:1 ends here
+// 6594d8a9 ends here

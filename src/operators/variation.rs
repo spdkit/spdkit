@@ -35,7 +35,10 @@ impl FlipBitMutation {
 
 impl VariationOperator<Binary> for FlipBitMutation {
     fn breed_from<R: Rng + Sized>(&self, members: &[Member<Binary>], rng: &mut R) -> Vec<Binary> {
-        let mut genomes: Vec<_> = members.iter().map(|m| m.genome().to_owned()).collect();
+        let mut genomes: Vec<_> = members
+            .iter()
+            .map(|m| m.genome().to_owned())
+            .collect();
         self.mutate_binary(&mut genomes, rng);
 
         genomes
@@ -43,7 +46,7 @@ impl VariationOperator<Binary> for FlipBitMutation {
 }
 // mutation:1 ends here
 
-// [[file:../../spdkit.note::*onepoint crossover][onepoint crossover:1]]
+// [[file:../../spdkit.note::175b0194][175b0194]]
 /// A point on both parents' chromosomes is picked randomly, and designated a
 /// 'crossover point'. Bits to the right of that point are swapped between the
 /// two parent chromosomes. This results in two offspring, each carrying some
@@ -59,7 +62,7 @@ impl OnePointCrossOver {
         let mut g2 = genomes[1].to_owned();
         assert_eq!(g1.len(), g2.len());
 
-        let i = rng.gen_range(0, g1.len());
+        let i = rng.gen_range(0..g1.len());
         std::mem::swap(&mut g1[i], &mut g2[i]);
 
         vec![g1, g2]
@@ -81,7 +84,10 @@ fn test_cx_onepoint() {
     // get global rng
     let mut rng = get_rng!();
 
-    let genomes: Vec<_> = vec!["10111", "01011"].iter().map(|s| Binary::from_str(s)).collect();
+    let genomes: Vec<_> = vec!["10111", "01011"]
+        .iter()
+        .map(|s| Binary::from_str(s))
+        .collect();
 
     let indvs = crate::individual::OneMax.create(genomes);
     let mut fitness = crate::fitness::Maximize;
@@ -91,7 +97,7 @@ fn test_cx_onepoint() {
         //
     }
 }
-// onepoint crossover:1 ends here
+// 175b0194 ends here
 
 // [[file:../../spdkit.note::*triadic crossover][triadic crossover:1]]
 #[derive(Debug, Clone)]

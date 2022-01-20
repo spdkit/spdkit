@@ -1,6 +1,4 @@
-// imports
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*imports][imports:1]]
+// [[file:../spdkit.note::*imports][imports:1]]
 use std::iter::FromIterator;
 
 use crate::common::*;
@@ -14,9 +12,7 @@ use crate::random::*;
 use crate::termination::*;
 // imports:1 ends here
 
-// base
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*base][base:1]]
+// [[file:../spdkit.note::109fedb5][109fedb5]]
 use std::marker::PhantomData;
 
 pub trait Evolve<G, F, C>
@@ -26,13 +22,15 @@ where
     C: EvaluateObjectiveValue<G>,
 {
     // Define how to evolve to next generation.
-    fn next_generation(&mut self, cur_population: &Population<G>, valuer: &mut Valuer<G, F, C>) -> Population<G>;
+    fn next_generation(
+        &mut self,
+        cur_population: &Population<G>,
+        valuer: &mut Valuer<G, F, C>,
+    ) -> Population<G>;
 }
-// base:1 ends here
+// 109fedb5 ends here
 
-// core
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*core][core:1]]
+// [[file:../spdkit.note::*core][core:1]]
 pub struct EvolutionAlgorithm<G, B, S>
 where
     G: Genome,
@@ -67,9 +65,19 @@ where
     S: Survive<G>,
     F: EvaluateFitness<G>,
 {
-    fn next_generation(&mut self, cur_population: &Population<G>, valuer: &mut Valuer<G, F, C>) -> Population<G> {
+    fn next_generation(
+        &mut self,
+        cur_population: &Population<G>,
+        valuer: &mut Valuer<G, F, C>,
+    ) -> Population<G> {
         let mut rng = get_rng!();
-        evolve_one_step(cur_population, &mut self.breeder, &mut self.survivor, valuer, &mut *rng)
+        evolve_one_step(
+            cur_population,
+            &mut self.breeder,
+            &mut self.survivor,
+            valuer,
+            &mut *rng,
+        )
     }
 }
 
@@ -109,15 +117,15 @@ where
     let survived_indvs = survivor.survive(tmp_population, rng);
     let n = m - survived_indvs.len();
     println!("removed {} bad individuals.", n);
-    let mut new_population = valuer.build_population(survived_indvs).with_size_limit(nlimit);
+    let mut new_population = valuer
+        .build_population(survived_indvs)
+        .with_size_limit(nlimit);
 
     new_population.to_owned()
 }
 // core:1 ends here
 
-// pub
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*pub][pub:1]]
+// [[file:../spdkit.note::*pub][pub:1]]
 /// Evolution engine.
 pub struct Engine<G, E, F, C>
 where
@@ -185,7 +193,10 @@ where
     ///
     /// * return an iterator over `Generation`.
     ///
-    pub fn evolve<'a>(&'a mut self, seeds: &[G]) -> impl Iterator<Item = Result<Generation<G>>> + 'a {
+    pub fn evolve<'a>(
+        &'a mut self,
+        seeds: &[G],
+    ) -> impl Iterator<Item = Result<Generation<G>>> + 'a {
         let mut termination = RunningMean::new(self.nlast);
         let mut valuer = self.valuer.take().expect("no valuer");
         let mut algo = self.algo.take().expect("no algo");
@@ -218,7 +229,10 @@ where
             // avoid infinite loop using a reliable termination criterion.
             if termination.meets(&g) {
                 error!("Terminated for stagnation!");
-                error!("Simulation has evolved for {} generations without changes.", self.nlast);
+                error!(
+                    "Simulation has evolved for {} generations without changes.",
+                    self.nlast
+                );
 
                 None
             } else {
@@ -229,9 +243,7 @@ where
 }
 // pub:1 ends here
 
-// test
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*test][test:1]]
+// [[file:../spdkit.note::*test][test:1]]
 #[cfg(test)]
 mod test {
     use super::*;
@@ -244,7 +256,9 @@ mod test {
     #[test]
     fn test_engine() -> Result<()> {
         // create a valuer gear
-        let valuer = Valuer::new().with_fitness(fitness::Maximize).with_creator(OneMax);
+        let valuer = Valuer::new()
+            .with_fitness(fitness::Maximize)
+            .with_creator(OneMax);
 
         // create a survivor gear
         let survivor = Survivor::default();
@@ -258,7 +272,12 @@ mod test {
         let algo = EvolutionAlgorithm::new(breeder, survivor);
 
         let seeds = build_initial_genomes(10);
-        for g in Engine::create().valuer(valuer).algorithm(algo).evolve(&seeds).take(10) {
+        for g in Engine::create()
+            .valuer(valuer)
+            .algorithm(algo)
+            .evolve(&seeds)
+            .take(10)
+        {
             let generation = g?;
             generation.summary();
         }

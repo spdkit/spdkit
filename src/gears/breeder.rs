@@ -76,7 +76,12 @@ where
     S: SelectionOperator,
 {
     /// Breed `m` new genomes from parent population.
-    fn breed<R: Rng + Sized>(&mut self, m: usize, population: &Population<G>, rng: &mut R) -> Vec<G> {
+    fn breed<R: Rng + Sized>(
+        &mut self,
+        m: usize,
+        population: &Population<G>,
+        rng: &mut R,
+    ) -> Vec<G> {
         // let mut crossover = self.crossover.take().expect("breeder has no crossover");
         let crossover = self.crossover.as_mut().expect("breeder has no crossover.");
         let selector = self.selector.as_mut().expect("breeder has no selector");
@@ -88,7 +93,7 @@ where
             let new_genomes = crossover.breed_from(&parents, rng);
             for mut g in new_genomes {
                 // mutate one bit/one point randomly.
-                if rng.gen_range(0.0, 1.0) < self.mut_prob {
+                if rng.gen_range(0.0..1.0) < self.mut_prob {
                     g.mutate(1, rng);
                 }
                 required_genomes.push(g);

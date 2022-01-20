@@ -11,7 +11,7 @@ pub trait Genome: Clone + Send {
 }
 // genome:1 ends here
 
-// [[file:../spdkit.note::*individual][individual:1]]
+// [[file:../spdkit.note::edee42d4][edee42d4]]
 #[derive(Clone, Debug)]
 pub struct Individual<G>
 where
@@ -24,7 +24,7 @@ where
 /// Evaluate the objective value of an individual.
 ///
 /// Potentially expensive operation.
-pub trait EvaluateObjectiveValue<G>: Clone + std::fmt::Debug
+pub trait EvaluateObjectiveValue<G>: Clone + std::fmt::Debug + std::marker::Sync
 where
     G: Genome,
 {
@@ -73,9 +73,9 @@ where
         self
     }
 }
-// individual:1 ends here
+// edee42d4 ends here
 
-// [[file:../spdkit.note::*create][create:1]]
+// [[file:../spdkit.note::ad65eec7][ad65eec7]]
 use gut::prelude::IntoParallelIterator;
 use gut::prelude::ParallelIterator;
 
@@ -94,16 +94,21 @@ where
 {
     /// Create individuals from genomes.
     fn create(&self, genomes: impl IntoIterator<Item = G>) -> Vec<Individual<G>> {
+        let genomes: Vec<_> = genomes.into_iter().collect();
+        // 2022-01-20: allow run in parallel
         genomes
-            .into_iter()
+            .into_par_iter()
             .map(|g| {
                 let raw_score = self.evaluate(&g);
-                Individual { genome: g, raw_score }
+                Individual {
+                    genome: g,
+                    raw_score,
+                }
             })
             .collect()
     }
 }
-// create:1 ends here
+// ad65eec7 ends here
 
 // [[file:../spdkit.note::*onemax][onemax:1]]
 #[derive(Clone, Debug)]
@@ -125,11 +130,18 @@ mod test {
 
     #[test]
     fn test() {
-        let codes: Vec<_> = vec!["10110", "01010"].iter().map(|x| Binary::from_str(x)).collect();
+        let codes: Vec<_> = vec!["10110", "01010"]
+            .iter()
+            .map(|x| Binary::from_str(x))
+            .collect();
 
         let indvs = OneMax.create(codes);
         for indv in indvs.iter() {
-            println!("indv {:}, objective value = {}", indv.genome(), indv.objective_value());
+            println!(
+                "indv {:}, objective value = {}",
+                indv.genome(),
+                indv.objective_value()
+            );
         }
     }
 }

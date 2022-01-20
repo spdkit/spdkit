@@ -33,7 +33,9 @@ impl RandomSelection {
         if self.allow_repetition {
             let mut selected = vec![];
             for _ in 0..self.n {
-                let member = all_members.choose(rng).expect("cannot select from empty slice");
+                let member = all_members
+                    .choose(rng)
+                    .expect("cannot select from empty slice");
                 selected.push(member.clone());
             }
 
@@ -46,7 +48,11 @@ impl RandomSelection {
 
 impl SelectionOperator for RandomSelection {
     /// Select individuals randomly from `population`.
-    fn select_from<'a, G, R>(&self, population: &'a Population<G>, rng: &mut R) -> Vec<Member<'a, G>>
+    fn select_from<'a, G, R>(
+        &self,
+        population: &'a Population<G>,
+        rng: &mut R,
+    ) -> Vec<Member<'a, G>>
     where
         G: Genome,
         R: Rng + Sized,
@@ -82,7 +88,11 @@ impl ElitistSelection {
 }
 
 impl SelectionOperator for ElitistSelection {
-    fn select_from<'a, G, R>(&self, population: &'a Population<G>, _rng: &mut R) -> Vec<Member<'a, G>>
+    fn select_from<'a, G, R>(
+        &self,
+        population: &'a Population<G>,
+        _rng: &mut R,
+    ) -> Vec<Member<'a, G>>
     where
         G: Genome,
         R: Rng + Sized,
@@ -132,7 +142,11 @@ impl RouletteWheelSelection {
 }
 
 impl SelectionOperator for RouletteWheelSelection {
-    fn select_from<'a, G, R>(&self, population: &'a Population<G>, rng: &mut R) -> Vec<Member<'a, G>>
+    fn select_from<'a, G, R>(
+        &self,
+        population: &'a Population<G>,
+        rng: &mut R,
+    ) -> Vec<Member<'a, G>>
     where
         G: Genome,
         R: Rng + Sized,
@@ -189,7 +203,11 @@ impl TournamentSelection {
 }
 
 impl SelectionOperator for TournamentSelection {
-    fn select_from<'a, G, R>(&self, population: &'a Population<G>, rng: &mut R) -> Vec<Member<'a, G>>
+    fn select_from<'a, G, R>(
+        &self,
+        population: &'a Population<G>,
+        rng: &mut R,
+    ) -> Vec<Member<'a, G>>
     where
         G: Genome,
         R: Rng + Sized,
@@ -199,7 +217,7 @@ impl SelectionOperator for TournamentSelection {
 }
 // tournament selection:1 ends here
 
-// [[file:../../spdkit.note::*stochastic universal sampling][stochastic universal sampling:1]]
+// [[file:../../spdkit.note::99448759][99448759]]
 /// Select the *n* individuals among the input *individuals*. The selection is
 /// made by using a single random value to sample all of the individuals by
 /// choosing them at evenly spaced intervals. The list returned contains
@@ -218,7 +236,11 @@ impl StochasticUniversalSampling {
 impl SelectionOperator for StochasticUniversalSampling {
     // Ported from deap:
     // https://github.com/DEAP/deap/blob/master/deap/tools/selection.py
-    fn select_from<'a, G, R>(&self, population: &'a Population<G>, rng: &mut R) -> Vec<Member<'a, G>>
+    fn select_from<'a, G, R>(
+        &self,
+        population: &'a Population<G>,
+        rng: &mut R,
+    ) -> Vec<Member<'a, G>>
     where
         G: Genome,
         R: Rng + Sized,
@@ -239,7 +261,7 @@ impl SelectionOperator for StochasticUniversalSampling {
 
         let mut chosen = vec![];
         let distance = fsum / self.n as f64;
-        let start = rng.gen_range(0.0, distance);
+        let start = rng.gen_range(0.0..distance);
         let points = (0..self.n).map(|i| start + distance * i as f64);
         for p in points {
             let mut i = 0;
@@ -254,7 +276,7 @@ impl SelectionOperator for StochasticUniversalSampling {
         chosen
     }
 }
-// stochastic universal sampling:1 ends here
+// 99448759 ends here
 
 // [[file:../../spdkit.note::*test][test:1]]
 
