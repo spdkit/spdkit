@@ -5,8 +5,8 @@ use std::iter::FromIterator;
 use crate::random::*;
 // imports:1 ends here
 
-// [[file:../spdkit.note::*base][base:1]]
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
+// [[file:../spdkit.note::e2e7a684][e2e7a684]]
+#[derive(Clone, Hash, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub struct Binary(Vec<bool>);
 
 impl crate::individual::Genome for Binary {}
@@ -66,11 +66,11 @@ impl Binary {
         }
     }
 }
-// base:1 ends here
+// e2e7a684 ends here
 
-// [[file:../spdkit.note::*molecule][molecule:1]]
-impl crate::individual::Genome for gchemol::Molecule {}
-// molecule:1 ends here
+// [[file:../spdkit.note::9defdebe][9defdebe]]
+// impl crate::individual::Genome for gchemol::Molecule {}
+// 9defdebe ends here
 
 // [[file:../spdkit.note::*mutate][mutate:1]]
 pub trait Mutate {

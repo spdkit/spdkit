@@ -5,11 +5,11 @@ use crate::encoding::*;
 use crate::random::*;
 // imports:1 ends here
 
-// [[file:../spdkit.note::*genome][genome:1]]
-pub trait Genome: Clone + Send {
+// [[file:../spdkit.note::8469d257][8469d257]]
+pub trait Genome: Clone + Send + std::hash::Hash + std::cmp::Eq {
     //
 }
-// genome:1 ends here
+// 8469d257 ends here
 
 // [[file:../spdkit.note::edee42d4][edee42d4]]
 #[derive(Clone, Debug)]
@@ -76,8 +76,7 @@ where
 // edee42d4 ends here
 
 // [[file:../spdkit.note::ad65eec7][ad65eec7]]
-use gut::prelude::IntoParallelIterator;
-use gut::prelude::ParallelIterator;
+use gut::prelude::*;
 
 /// blanket implementation for creating new individuals from genomes
 pub(crate) trait Create<G>
@@ -94,16 +93,21 @@ where
 {
     /// Create individuals from genomes.
     fn create(&self, genomes: impl IntoIterator<Item = G>) -> Vec<Individual<G>> {
+        // remove possible duplicates
         let genomes: Vec<_> = genomes.into_iter().collect();
+        let n = genomes.len();
+        let genomes: std::collections::HashSet<_> = genomes.into_iter().collect();
+        let m = n - genomes.len();
+        if m > 0 {
+            info!("Removed {m} duplicates from {n} created genomes.");
+        }
+
         // 2022-01-20: allow run in parallel
         genomes
             .into_par_iter()
             .map(|g| {
                 let raw_score = self.evaluate(&g);
-                Individual {
-                    genome: g,
-                    raw_score,
-                }
+                Individual { genome: g, raw_score }
             })
             .collect()
     }
