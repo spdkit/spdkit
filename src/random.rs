@@ -15,13 +15,17 @@ fn random_seed_u64() -> u64 {
 fn get_rng_with_seed(seed: Option<u64>) -> StdRng {
     let seed = seed.unwrap_or_else(|| rand::random::<u64>());
     info!("Initialize rng with seed {}", seed);
+    println!("spdkit: the random process can be repeated with seed {seed}");
+    let line = format!("export SPDKIT_RANDOM_SEED={seed}");
+    println!("spdkit: use shell cmd {line:?} to set it");
 
     StdRng::seed_from_u64(seed)
 }
 
 lazy_static! {
     pub static ref RNG: Mutex<StdRng> = {
-        let mut r = get_rng_with_seed(None);
+        let seed = crate::vars::Vars::from_env().random_seed;
+        let mut r = get_rng_with_seed(seed);
         Mutex::new(r)
     };
 }

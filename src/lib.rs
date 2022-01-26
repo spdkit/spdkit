@@ -8,11 +8,13 @@
 //        AUTHOR:  Wenping Guo <ybyygu@gmail.com>
 //       LICENCE:  GPL version 2 or upper
 //       CREATED:  <2018-06-14 Thu 20:52>
-//       UPDATED:  <2021-07-01 Thu 17:14>
+//       UPDATED:  <2022-01-26 Wed 09:46>
 //===============================================================================#
 // header:1 ends here
 
-// [[file:../spdkit.note::*base][base:1]]
+// [[file:../spdkit.note::3ac79127][3ac79127]]
+use gut::prelude::*;
+
 // FIXME: remove?
 
 #[macro_use]
@@ -157,13 +159,12 @@ pub mod common {
         assert!(values[4].is_nan());
     }
 }
-// base:1 ends here
+// 3ac79127 ends here
 
-// [[file:../spdkit.note::*mods][mods:1]]
+// [[file:../spdkit.note::1e9e2348][1e9e2348]]
 #[macro_use]
 pub mod random; // the mod order is important for get_rng! macro
 
-mod annealing;
 pub mod encoding;
 pub mod engine;
 pub mod fitness;
@@ -172,7 +173,10 @@ pub mod individual;
 pub mod operators;
 pub mod population;
 pub mod termination;
-// mods:1 ends here
+
+mod annealing;
+mod vars;
+// 1e9e2348 ends here
 
 // [[file:../spdkit.note::*prelude][prelude:1]]
 pub mod prelude {

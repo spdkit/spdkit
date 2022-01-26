@@ -13,7 +13,9 @@ exclude = ["images/*", "docs/*", "ltxpng/*", "data/*"]
 [dependencies]
 rand = "0.8"
 lazy_static = "1.3"
+envy = "0.4"
 vecfx = "0.1"
 gut = {version="0.2", package="gchemol-gut"}
+serde = {version="1", features = ["derive"]}
 gchemol = { version = ">=0.0.41", features=["adhoc"] }
 # d9a471e3 ends here
