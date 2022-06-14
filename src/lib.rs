@@ -1,6 +1,4 @@
-// header
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*header][header:1]]
+// [[file:../spdkit.note::*header][header:1]]
 //===============================================================================#
 //   DESCRIPTION:  spdkit: Structure Predication Development Kit
 //
@@ -10,13 +8,13 @@
 //        AUTHOR:  Wenping Guo <ybyygu@gmail.com>
 //       LICENCE:  GPL version 2 or upper
 //       CREATED:  <2018-06-14 Thu 20:52>
-//       UPDATED:  <2020-02-20 Thu 08:38>
+//       UPDATED:  <2022-01-26 Wed 09:46>
 //===============================================================================#
 // header:1 ends here
 
-// base
+// [[file:../spdkit.note::3ac79127][3ac79127]]
+use gut::prelude::*;
 
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*base][base:1]]
 // FIXME: remove?
 
 #[macro_use]
@@ -161,11 +159,9 @@ pub mod common {
         assert!(values[4].is_nan());
     }
 }
-// base:1 ends here
+// 3ac79127 ends here
 
-// mods
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*mods][mods:1]]
+// [[file:../spdkit.note::1e9e2348][1e9e2348]]
 #[macro_use]
 pub mod random; // the mod order is important for get_rng! macro
 
@@ -177,13 +173,12 @@ pub mod individual;
 pub mod operators;
 pub mod population;
 pub mod termination;
+
 mod annealing;
-// mods:1 ends here
+mod vars;
+// 1e9e2348 ends here
 
-// prelude
-// exports traits
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*prelude][prelude:1]]
+// [[file:../spdkit.note::*prelude][prelude:1]]
 pub mod prelude {
     pub use crate::engine::Evolve;
     pub use crate::fitness::EvaluateFitness;
@@ -198,9 +193,7 @@ pub mod prelude {
 }
 // prelude:1 ends here
 
-// exports
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*exports][exports:1]]
+// [[file:../spdkit.note::*exports][exports:1]]
 pub use crate::engine::{Engine, EvolutionAlgorithm};
 pub use crate::gears::GeneticBreeder;
 pub use crate::gears::Survivor;

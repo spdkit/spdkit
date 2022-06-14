@@ -1,23 +1,17 @@
-// imports
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*imports][imports:1]]
+// [[file:../spdkit.note::*imports][imports:1]]
 use std::marker::PhantomData;
 
 use crate::encoding::*;
 use crate::random::*;
 // imports:1 ends here
 
-// genome
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*genome][genome:1]]
-pub trait Genome: Clone + Send {
+// [[file:../spdkit.note::8469d257][8469d257]]
+pub trait Genome: Clone + Send + std::hash::Hash + std::cmp::Eq {
     //
 }
-// genome:1 ends here
+// 8469d257 ends here
 
-// individual
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*individual][individual:1]]
+// [[file:../spdkit.note::edee42d4][edee42d4]]
 #[derive(Clone, Debug)]
 pub struct Individual<G>
 where
@@ -30,7 +24,7 @@ where
 /// Evaluate the objective value of an individual.
 ///
 /// Potentially expensive operation.
-pub trait EvaluateObjectiveValue<G>: Clone + std::fmt::Debug
+pub trait EvaluateObjectiveValue<G>: Clone + std::fmt::Debug + std::marker::Sync
 where
     G: Genome,
 {
@@ -79,13 +73,10 @@ where
         self
     }
 }
-// individual:1 ends here
+// edee42d4 ends here
 
-// create
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*create][create:1]]
-use gut::prelude::IntoParallelIterator;
-use gut::prelude::ParallelIterator;
+// [[file:../spdkit.note::ad65eec7][ad65eec7]]
+use gut::prelude::*;
 
 /// blanket implementation for creating new individuals from genomes
 pub(crate) trait Create<G>
@@ -102,24 +93,28 @@ where
 {
     /// Create individuals from genomes.
     fn create(&self, genomes: impl IntoIterator<Item = G>) -> Vec<Individual<G>> {
+        // remove possible duplicates
+        let genomes: Vec<_> = genomes.into_iter().collect();
+        let n = genomes.len();
+        let genomes: std::collections::HashSet<_> = genomes.into_iter().collect();
+        let m = n - genomes.len();
+        if m > 0 {
+            info!("Removed {m} duplicates from {n} created genomes.");
+        }
+
+        // 2022-01-20: allow run in parallel
         genomes
-            .into_iter()
+            .into_par_iter()
             .map(|g| {
                 let raw_score = self.evaluate(&g);
-                Individual {
-                    genome: g,
-                    raw_score,
-                }
+                Individual { genome: g, raw_score }
             })
             .collect()
     }
 }
-// create:1 ends here
+// ad65eec7 ends here
 
-// onemax
-// for test purpose
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*onemax][onemax:1]]
+// [[file:../spdkit.note::*onemax][onemax:1]]
 #[derive(Clone, Debug)]
 pub struct OneMax;
 
@@ -131,9 +126,7 @@ impl EvaluateObjectiveValue<Binary> for OneMax {
 }
 // onemax:1 ends here
 
-// test
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*test][test:1]]
+// [[file:../spdkit.note::*test][test:1]]
 #[cfg(test)]
 mod test {
     use super::*;

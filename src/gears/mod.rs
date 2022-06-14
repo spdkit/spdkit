@@ -22,12 +22,7 @@ where
 
 /// Breed `n` new genomes (not-evaluated individual) from parent population.
 pub trait Breed<G: Genome>: Clone {
-    fn breed<R: Rng + Sized>(
-        &mut self,
-        n: usize,
-        population: &Population<G>,
-        rng: &mut R,
-    ) -> Vec<G>;
+    fn breed<R: Rng + Sized>(&mut self, n: usize, population: &Population<G>, rng: &mut R) -> Vec<G>;
 }
 
 mod breeder;

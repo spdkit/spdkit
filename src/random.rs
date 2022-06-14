@@ -1,14 +1,10 @@
-// imports
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*imports][imports:1]]
+// [[file:../spdkit.note::*imports][imports:1]]
 use std::sync::Mutex;
 
 use crate::common::*;
 // imports:1 ends here
 
-// base
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*base][base:1]]
+// [[file:../spdkit.note::6594d8a9][6594d8a9]]
 pub use rand::prelude::*;
 
 // To not cause trouble, make sure one RNG per thread
@@ -19,13 +15,17 @@ fn random_seed_u64() -> u64 {
 fn get_rng_with_seed(seed: Option<u64>) -> StdRng {
     let seed = seed.unwrap_or_else(|| rand::random::<u64>());
     info!("Initialize rng with seed {}", seed);
+    println!("spdkit: the random process can be repeated with seed {seed}");
+    let line = format!("export SPDKIT_RANDOM_SEED={seed}");
+    println!("spdkit: use shell cmd {line:?} to set it");
 
     StdRng::seed_from_u64(seed)
 }
 
 lazy_static! {
     pub static ref RNG: Mutex<StdRng> = {
-        let mut r = get_rng_with_seed(None);
+        let seed = crate::vars::Vars::from_env().random_seed;
+        let mut r = get_rng_with_seed(seed);
         Mutex::new(r)
     };
 }
@@ -45,7 +45,7 @@ mod test {
 
         let mut rng = get_rng!();
         rng.gen::<i32>();
-        assert_eq!(rng.gen_range(0, 1), 0);
+        assert_eq!(rng.gen_range(0..1), 0);
     }
 }
-// base:1 ends here
+// 6594d8a9 ends here

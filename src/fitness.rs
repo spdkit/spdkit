@@ -1,14 +1,10 @@
-// imports
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*imports][imports:1]]
+// [[file:../spdkit.note::*imports][imports:1]]
 use crate::common::*;
 use crate::encoding::Binary;
 use crate::individual::*;
 // imports:1 ends here
 
-// base
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*base][base:1]]
+// [[file:../spdkit.note::*base][base:1]]
 // avoid zero fitness value
 const EPSILON: f64 = 10e-8;
 
@@ -40,10 +36,7 @@ where
         if let Some(score_ref) = indvs.iter().map(|indv| indv.objective_value()).fmin() {
             // avoid zero value fitness
             let score_ref = score_ref * (1.0 - EPSILON);
-            indvs
-                .iter()
-                .map(|x| x.objective_value() - score_ref)
-                .collect()
+            indvs.iter().map(|x| x.objective_value() - score_ref).collect()
         } else {
             warn!("empty individual list!");
             vec![]
@@ -64,10 +57,7 @@ where
         if let Some(score_ref) = indvs.iter().map(|indv| indv.objective_value()).fmax() {
             // avoid zero value fitness
             let score_ref = score_ref * (1.0 + EPSILON);
-            indvs
-                .iter()
-                .map(|x| score_ref - x.objective_value())
-                .collect()
+            indvs.iter().map(|x| score_ref - x.objective_value()).collect()
         } else {
             warn!("empty individual list!");
             vec![]
@@ -76,9 +66,7 @@ where
 }
 // base:1 ends here
 
-// minimize energy
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*minimize%20energy][minimize energy:1]]
+// [[file:../spdkit.note::*minimize energy][minimize energy:1]]
 use crate::annealing::Annealer;
 
 /// Minimize energy with Boltzmann distribution. The lower of the energy, the

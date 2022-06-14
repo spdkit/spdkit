@@ -33,12 +33,7 @@ where
 /// For individual replacement
 pub trait ReplacementOperator: GeneticOperator {
     /// Remove `n` bad performaing members in population.
-    fn remove_from<G: Genome, R: Rng + Sized>(
-        &self,
-        n: usize,
-        population: &mut Population<G>,
-        rng: &mut R,
-    );
+    fn remove_from<G: Genome, R: Rng + Sized>(&self, n: usize, population: &mut Population<G>, rng: &mut R);
 }
 
 pub mod replacement;

@@ -1,6 +1,4 @@
-// imports
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*imports][imports:1]]
+// [[file:../spdkit.note::*imports][imports:1]]
 use std::iter::FromIterator;
 
 use crate::common::*;
@@ -14,9 +12,7 @@ use crate::random::*;
 use crate::termination::*;
 // imports:1 ends here
 
-// base
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*base][base:1]]
+// [[file:../spdkit.note::109fedb5][109fedb5]]
 use std::marker::PhantomData;
 
 pub trait Evolve<G, F, C>
@@ -32,11 +28,9 @@ where
         valuer: &mut Valuer<G, F, C>,
     ) -> Population<G>;
 }
-// base:1 ends here
+// 109fedb5 ends here
 
-// core
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*core][core:1]]
+// [[file:../spdkit.note::*core][core:1]]
 pub struct EvolutionAlgorithm<G, B, S>
 where
     G: Genome,
@@ -131,9 +125,7 @@ where
 }
 // core:1 ends here
 
-// pub
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*pub][pub:1]]
+// [[file:../spdkit.note::*pub][pub:1]]
 /// Evolution engine.
 pub struct Engine<G, E, F, C>
 where
@@ -251,9 +243,7 @@ where
 }
 // pub:1 ends here
 
-// test
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*test][test:1]]
+// [[file:../spdkit.note::*test][test:1]]
 #[cfg(test)]
 mod test {
     use super::*;

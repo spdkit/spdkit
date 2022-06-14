@@ -1,6 +1,4 @@
-// imports
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*imports][imports:1]]
+// [[file:../../spdkit.note::*imports][imports:1]]
 use std::marker::PhantomData;
 
 use crate::common::*;
@@ -95,7 +93,7 @@ where
             let new_genomes = crossover.breed_from(&parents, rng);
             for mut g in new_genomes {
                 // mutate one bit/one point randomly.
-                if rng.gen_range(0.0, 1.0) < self.mut_prob {
+                if rng.gen_range(0.0..1.0) < self.mut_prob {
                     g.mutate(1, rng);
                 }
                 required_genomes.push(g);
@@ -106,8 +104,6 @@ where
     }
 }
 
-// hypermutation
-
-// [[file:~/Workspace/Programming/structure-predication/spdkit/spdkit.note::*hypermutation][hypermutation:1]]
+// [[file:../../spdkit.note::*hypermutation][hypermutation:1]]
 
 // hypermutation:1 ends here
