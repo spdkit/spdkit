@@ -8,7 +8,7 @@
 //        AUTHOR:  Wenping Guo <ybyygu@gmail.com>
 //       LICENCE:  GPL version 2 or upper
 //       CREATED:  <2018-06-14 Thu 20:52>
-//       UPDATED:  <2022-01-26 Wed 09:46>
+//       UPDATED:  <2022-06-14 Tue 10:56>
 //===============================================================================#
 // header:1 ends here
 
@@ -175,10 +175,12 @@ pub mod population;
 pub mod termination;
 
 mod annealing;
+mod fingerprint;
+mod graph6;
 mod vars;
 // 1e9e2348 ends here
 
-// [[file:../spdkit.note::*prelude][prelude:1]]
+// [[file:../spdkit.note::4ccc7fd1][4ccc7fd1]]
 pub mod prelude {
     pub use crate::engine::Evolve;
     pub use crate::fitness::EvaluateFitness;
@@ -190,8 +192,9 @@ pub mod prelude {
     pub use crate::random::*;
 
     pub use crate::encoding::Mutate;
+    pub use crate::fingerprint::FingerPrintExt;
 }
-// prelude:1 ends here
+// 4ccc7fd1 ends here
 
 // [[file:../spdkit.note::*exports][exports:1]]
 pub use crate::engine::{Engine, EvolutionAlgorithm};
