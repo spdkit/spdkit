@@ -18,5 +18,5 @@ vecfx = "0.1.5"
 gut = {version="0.3.1", package="gchemol-gut"}
 serde = {version="1", features = ["derive"]}
 gchemol = { version = "0.0.42", features=["adhoc"] }
-nauty = { version = "0.1", package="spdkit-nauty", features=["adhoc"] }
+nauty = { version = "0.1.1", package="spdkit-nauty" }
 # d9a471e3 ends here

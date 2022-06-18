@@ -65,20 +65,10 @@ fn reorder_atoms_canonically(mol: &mut Molecule) {
     let edges: Vec<_> = mol.bonds().map(|(i, j, _)| (i, j)).collect();
     let colors: Vec<_> = mol.atomic_numbers().collect();
 
-    dbg!();
     let labels = nauty::get_canonical_labels(&nodes, &edges, &colors).expect("nauty failure");
-    dbg!();
     assert_eq!(labels.len(), nodes.len());
     // NOTE: make permutation into sorting order. it is tricky.
     let mapping: std::collections::HashMap<_, _> = labels.iter().enumerate().map(|(i, l)| (*l as usize, i)).collect();
-
-    // // FIXME: remove
-    // for i in nodes.iter() {
-    //     if !mapping.contains_key(i) {
-    //         dbg!(&nodes, &labels, &edges, &colors, &mapping);
-    //         gut::utils::sleep(5.0);
-    //     }
-    // }
     let orders: Vec<_> = nodes.iter().map(|i| mapping[&i]).collect();
     mol.reorder(&orders);
 }
