@@ -1,7 +1,7 @@
 # [[file:spdkit.note::d9a471e3][d9a471e3]]
 [package]
 name = "spdkit"
-version = "0.0.19"
+version = "0.0.20"
 edition = "2021"
 authors = ["Wenping Guo <ybyygu@gmail.com>"]
 description = "spdkit: Structure Predication Development Kit"
@@ -11,11 +11,12 @@ license = "MIT OR Apache-2.0"
 exclude = ["images/*", "docs/*", "ltxpng/*", "data/*"]
 
 [dependencies]
-rand = "0.8"
+rand = "0.8.5"
 lazy_static = "1.3"
 envy = "0.4"
-vecfx = "0.1"
-gut = {version="0.2", package="gchemol-gut"}
+vecfx = "0.1.5"
+gut = {version="0.4", package="gchemol-gut"}
 serde = {version="1", features = ["derive"]}
-gchemol = { version = ">=0.0.41", features=["adhoc"] }
+gchemol = { version = "0.0.42", features=["adhoc"] }
+nauty = { version = "0.1.1", package="spdkit-nauty" }
 # d9a471e3 ends here
