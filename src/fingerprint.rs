@@ -59,7 +59,25 @@ fn test_molecule_reorder() -> Result<()> {
 }
 // equivalent atoms:1 ends here
 
-// [[file:../spdkit.note::3d0c2d80][3d0c2d80]]
+// [[file:../spdkit.note::63d99d8c][63d99d8c]]
+/// Renumber `mol` based on connectivity of `mol_ref`
+fn renumber_atoms_by_connectivity(mol: &mut Molecule, mol_ref: &Molecule) -> Result<f64> {
+    use std::collections::HashMap;
+
+    let mut mol_b = mol_ref.clone();
+    ensure!(mol.fingerprint() == mol_b.fingerprint(), "found difference in connectivity");
+    let (_, po) = mol_b.reorder_cannonically();
+
+    // NOTE: useful for mirror inversion?
+    let _ = mol.reorder_cannonically();
+    let rmsd = mol.superimpose_onto(&mol_b, None);
+    mol.renumber_using(&po);
+
+    Ok(rmsd)
+}
+// 63d99d8c ends here
+
+// [[file:../spdkit.note::edecb43c][edecb43c]]
 fn reorder_atoms_canonically(mol: &mut Molecule) -> (Vec<usize>, Vec<usize>) {
     let nodes: Vec<_> = mol.numbers().collect();
     let edges: Vec<_> = mol.bonds().map(|(i, j, _)| (i, j)).collect();
@@ -73,11 +91,14 @@ fn reorder_atoms_canonically(mol: &mut Molecule) -> (Vec<usize>, Vec<usize>) {
     mol.reorder(&orders);
     (orders, labels)
 }
+// edecb43c ends here
 
+// [[file:../spdkit.note::3d0c2d80][3d0c2d80]]
 /// Extension trait providing fingerprint method
 pub trait FingerPrintExt {
     fn fingerprint(&self) -> String;
     fn reorder_cannonically(&mut self) -> (Vec<usize>, Vec<usize>);
+    fn resemble_rigidly(&mut self, _: &Molecule) -> Result<f64>;
 }
 
 impl FingerPrintExt for Molecule {
@@ -103,6 +124,15 @@ impl FingerPrintExt for Molecule {
     /// ```
     fn reorder_cannonically(&mut self) -> (Vec<usize>, Vec<usize>) {
         reorder_atoms_canonically(self)
+    }
+
+    /// Make `self` resemble `mol_ref` by applying rigid operations in
+    /// permutation, translation or rotation, without changing inner
+    /// 3D geometry. Equivalent atoms are recoginized based on
+    /// connectivity. Return alignment rmsd on success.
+    fn resemble_rigidly(&mut self, mol_ref: &Molecule) -> Result<f64> {
+        let rmsd = renumber_atoms_by_connectivity(self, mol_ref)?;
+        Ok(rmsd)
     }
 }
 // 3d0c2d80 ends here
@@ -147,6 +177,23 @@ fn test_molecule_fingerprint() -> Result<()> {
         let bi = mol1_.get_atom_unchecked(i);
         assert_eq!(ai.symbol(), bi.symbol());
         assert_eq!(ai.position(), bi.position());
+    }
+
+    Ok(())
+}
+
+#[test]
+fn test_reorder_by_connect() -> Result<()> {
+    use gchemol::prelude::*;
+
+    let mut ma = Molecule::from_file("tests/files/submol_a.mol2")?;
+    let mb = Molecule::from_file("tests/files/submol_b.mol2")?;
+
+    renumber_atoms_by_connectivity(&mut ma, &mb)?;
+    for i in ma.numbers() {
+        let aa = ma.get_atom_unchecked(i);
+        let ab = mb.get_atom_unchecked(i);
+        assert_eq!(aa.symbol(), ab.symbol());
     }
 
     Ok(())
