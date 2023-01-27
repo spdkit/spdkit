@@ -60,7 +60,7 @@ fn test_molecule_reorder() -> Result<()> {
 // equivalent atoms:1 ends here
 
 // [[file:../spdkit.note::3d0c2d80][3d0c2d80]]
-fn reorder_atoms_canonically(mol: &mut Molecule) -> Vec<usize> {
+fn reorder_atoms_canonically(mol: &mut Molecule) -> (Vec<usize>, Vec<usize>) {
     let nodes: Vec<_> = mol.numbers().collect();
     let edges: Vec<_> = mol.bonds().map(|(i, j, _)| (i, j)).collect();
     let colors: Vec<_> = mol.atomic_numbers().collect();
@@ -71,13 +71,13 @@ fn reorder_atoms_canonically(mol: &mut Molecule) -> Vec<usize> {
     let mapping: std::collections::HashMap<_, _> = labels.iter().enumerate().map(|(i, l)| (*l as usize, i + 1)).collect();
     let orders: Vec<_> = nodes.iter().map(|i| mapping[&i]).collect();
     mol.reorder(&orders);
-    orders
+    (orders, labels)
 }
 
 /// Extension trait providing fingerprint method
 pub trait FingerPrintExt {
     fn fingerprint(&self) -> String;
-    fn reorder_cannonically(&mut self) -> Vec<usize>;
+    fn reorder_cannonically(&mut self) -> (Vec<usize>, Vec<usize>);
 }
 
 impl FingerPrintExt for Molecule {
@@ -89,10 +89,19 @@ impl FingerPrintExt for Molecule {
         gut::utils::hash_code(&fp)
     }
 
-    /// This is an operation of reordering the atoms in a way that does not depend
-    /// on where they were before. The bonding graph is important for this
-    /// operation. Return permutation order applied.
-    fn reorder_cannonically(&mut self) -> Vec<usize> {
+    /// This is an operation of reordering the atoms in a way that
+    /// does not depend on where they were before. The bonding graph
+    /// is important for this operation. Return the orders and
+    /// canonical labels applied. The latter can be applied to restore
+    /// original numbering.
+    ///
+    /// # Example
+    /// ```rust,ignore,no_run
+    /// let (o1, o2) = mol.reorder_cannonically();
+    /// # restore old numbering
+    /// mol.reorder(&o2);
+    /// ```
+    fn reorder_cannonically(&mut self) -> (Vec<usize>, Vec<usize>) {
         reorder_atoms_canonically(self)
     }
 }
@@ -110,7 +119,7 @@ fn test_molecule_fingerprint() -> Result<()> {
 
     let mut mol1_ = mol1.clone();
     let mut mol2_ = mol2.clone();
-    let new_numbers = mol1_.reorder_cannonically();
+    let (new_numbers, _) = mol1_.reorder_cannonically();
     let _ = mol2_.reorder_cannonically();
     for i in 1..=3 {
         assert_eq!(mol1_.get_atom_unchecked(i).symbol(), mol2_.get_atom_unchecked(i).symbol());
@@ -126,6 +135,19 @@ fn test_molecule_fingerprint() -> Result<()> {
     let mol = Molecule::from_file("./tests/files/CH4-nauty.mol2")?;
     let fp3 = mol.fingerprint();
     assert_ne!(fp1, fp3);
+
+    // restore old numbering
+    let mut mol1_ = mol1.clone();
+    let (o1, o2) = mol1_.reorder_cannonically();
+    // NOTE: reorder will renumber atoms from 1
+    // mol1_.reorder(&o2);
+    mol1_.renumber_using(&o2);
+    for i in 1..=3 {
+        let ai = mol1.get_atom_unchecked(i);
+        let bi = mol1_.get_atom_unchecked(i);
+        assert_eq!(ai.symbol(), bi.symbol());
+        assert_eq!(ai.position(), bi.position());
+    }
 
     Ok(())
 }
