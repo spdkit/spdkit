@@ -59,8 +59,26 @@ fn test_molecule_reorder() -> Result<()> {
 }
 // equivalent atoms:1 ends here
 
-// [[file:../spdkit.note::3d0c2d80][3d0c2d80]]
-fn reorder_atoms_canonically(mol: &mut Molecule) {
+// [[file:../spdkit.note::63d99d8c][63d99d8c]]
+/// Renumber `mol` based on connectivity of `mol_ref`
+fn renumber_atoms_by_connectivity(mol: &mut Molecule, mol_ref: &Molecule) -> Result<f64> {
+    use std::collections::HashMap;
+
+    let mut mol_b = mol_ref.clone();
+    ensure!(mol.fingerprint() == mol_b.fingerprint(), "found difference in connectivity");
+    let (_, po) = mol_b.reorder_cannonically();
+
+    // NOTE: useful for mirror inversion?
+    let _ = mol.reorder_cannonically();
+    let rmsd = mol.superimpose_onto(&mol_b, None);
+    mol.renumber_using(&po);
+
+    Ok(rmsd)
+}
+// 63d99d8c ends here
+
+// [[file:../spdkit.note::edecb43c][edecb43c]]
+fn reorder_atoms_canonically(mol: &mut Molecule) -> (Vec<usize>, Vec<usize>) {
     let nodes: Vec<_> = mol.numbers().collect();
     let edges: Vec<_> = mol.bonds().map(|(i, j, _)| (i, j)).collect();
     let colors: Vec<_> = mol.atomic_numbers().collect();
@@ -68,15 +86,19 @@ fn reorder_atoms_canonically(mol: &mut Molecule) {
     let labels = nauty::get_canonical_labels(&nodes, &edges, &colors).expect("nauty failure");
     assert_eq!(labels.len(), nodes.len());
     // NOTE: make permutation into sorting order. it is tricky.
-    let mapping: std::collections::HashMap<_, _> = labels.iter().enumerate().map(|(i, l)| (*l as usize, i)).collect();
+    let mapping: std::collections::HashMap<_, _> = labels.iter().enumerate().map(|(i, l)| (*l as usize, i + 1)).collect();
     let orders: Vec<_> = nodes.iter().map(|i| mapping[&i]).collect();
     mol.reorder(&orders);
+    (orders, labels)
 }
+// edecb43c ends here
 
+// [[file:../spdkit.note::3d0c2d80][3d0c2d80]]
 /// Extension trait providing fingerprint method
 pub trait FingerPrintExt {
     fn fingerprint(&self) -> String;
-    fn reorder_cannonically(&mut self);
+    fn reorder_cannonically(&mut self) -> (Vec<usize>, Vec<usize>);
+    fn resemble_rigidly(&mut self, _: &Molecule) -> Result<f64>;
 }
 
 impl FingerPrintExt for Molecule {
@@ -88,11 +110,29 @@ impl FingerPrintExt for Molecule {
         gut::utils::hash_code(&fp)
     }
 
-    /// This is an operation of reordering the atoms in a way that does not depend
-    /// on where they were before. The bonding graph is important for this
-    /// operation.
-    fn reorder_cannonically(&mut self) {
-        reorder_atoms_canonically(self);
+    /// This is an operation of reordering the atoms in a way that
+    /// does not depend on where they were before. The bonding graph
+    /// is important for this operation. Return the orders and
+    /// canonical labels applied. The latter can be applied to restore
+    /// original numbering.
+    ///
+    /// # Example
+    /// ```rust,ignore,no_run
+    /// let (o1, o2) = mol.reorder_cannonically();
+    /// # restore old numbering
+    /// mol.reorder(&o2);
+    /// ```
+    fn reorder_cannonically(&mut self) -> (Vec<usize>, Vec<usize>) {
+        reorder_atoms_canonically(self)
+    }
+
+    /// Make `self` resemble `mol_ref` by applying rigid operations in
+    /// permutation, translation or rotation, without changing inner
+    /// 3D geometry. Equivalent atoms are recoginized based on
+    /// connectivity. Return alignment rmsd on success.
+    fn resemble_rigidly(&mut self, mol_ref: &Molecule) -> Result<f64> {
+        let rmsd = renumber_atoms_by_connectivity(self, mol_ref)?;
+        Ok(rmsd)
     }
 }
 // 3d0c2d80 ends here
@@ -100,45 +140,61 @@ impl FingerPrintExt for Molecule {
 // [[file:../spdkit.note::fb3d7a90][fb3d7a90]]
 #[test]
 fn test_molecule_fingerprint() -> Result<()> {
-    let mol = Molecule::from_file("./tests/files/H2O-rotated.mol2")?;
-    let fp1 = mol.fingerprint();
+    let mol1 = Molecule::from_file("./tests/files/H2O-rotated.mol2")?;
+    let fp1 = mol1.fingerprint();
 
-    let mol = Molecule::from_file("./tests/files/H2O-reordered.mol2")?;
-    let fp2 = mol.fingerprint();
+    let mol2 = Molecule::from_file("./tests/files/H2O-reordered.mol2")?;
+    let fp2 = mol2.fingerprint();
     assert_eq!(fp1, fp2);
+
+    let mut mol1_ = mol1.clone();
+    let mut mol2_ = mol2.clone();
+    let (new_numbers, _) = mol1_.reorder_cannonically();
+    let _ = mol2_.reorder_cannonically();
+    for i in 1..=3 {
+        assert_eq!(mol1_.get_atom_unchecked(i).symbol(), mol2_.get_atom_unchecked(i).symbol());
+    }
+    let old_numbers = mol1.numbers();
+    let mapping: std::collections::HashMap<usize, usize> = new_numbers.into_iter().zip(old_numbers).collect();
+    for (i, j) in [(1, 2), (1, 3), (2, 3)] {
+        let dij_old = mol1.distance(i, j);
+        let dij_new = mol1_.distance(mapping[&i], mapping[&j]);
+        assert_eq!(dij_old, dij_new);
+    }
 
     let mol = Molecule::from_file("./tests/files/CH4-nauty.mol2")?;
     let fp3 = mol.fingerprint();
     assert_ne!(fp1, fp3);
 
-    let nodes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
-    let colors = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6];
-    let edges = [
-        (1, 22),
-        (2, 22),
-        (3, 22),
-        (4, 20),
-        (5, 18),
-        (6, 19),
-        (7, 21),
-        (8, 21),
-        (9, 10),
-        (11, 16),
-        (11, 21),
-        (12, 21),
-        (12, 15),
-        (13, 18),
-        (13, 17),
-        (14, 22),
-        (14, 15),
-        (14, 17),
-        (16, 17),
-        (19, 20),
-    ];
+    // restore old numbering
+    let mut mol1_ = mol1.clone();
+    let (o1, o2) = mol1_.reorder_cannonically();
+    // NOTE: reorder will renumber atoms from 1
+    // mol1_.reorder(&o2);
+    mol1_.renumber_using(&o2);
+    for i in 1..=3 {
+        let ai = mol1.get_atom_unchecked(i);
+        let bi = mol1_.get_atom_unchecked(i);
+        assert_eq!(ai.symbol(), bi.symbol());
+        assert_eq!(ai.position(), bi.position());
+    }
 
-    let labels = nauty::get_canonical_labels(&nodes, &edges, &colors);
-    dbg!(labels);
-    let labels = [1, 2, 9, 10, 5, 9, 10, 8, 6, 7, 11, 18, 11, 21, 20, 22, 22, 18, 21, 20, 17, 19];
+    Ok(())
+}
+
+#[test]
+fn test_reorder_by_connect() -> Result<()> {
+    use gchemol::prelude::*;
+
+    let mut ma = Molecule::from_file("tests/files/submol_a.mol2")?;
+    let mb = Molecule::from_file("tests/files/submol_b.mol2")?;
+
+    renumber_atoms_by_connectivity(&mut ma, &mb)?;
+    for i in ma.numbers() {
+        let aa = ma.get_atom_unchecked(i);
+        let ab = mb.get_atom_unchecked(i);
+        assert_eq!(aa.symbol(), ab.symbol());
+    }
 
     Ok(())
 }
