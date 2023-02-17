@@ -1,7 +1,7 @@
 # [[file:spdkit.note::d9a471e3][d9a471e3]]
 [package]
 name = "spdkit"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["Wenping Guo <ybyygu@gmail.com>"]
 description = "spdkit: Structure Predication Development Kit"

@@ -1,4 +1,4 @@
-// [[file:../spdkit.note::*header][header:1]]
+// [[file:../spdkit.note::54047155][54047155]]
 //===============================================================================#
 //   DESCRIPTION:  spdkit: Structure Predication Development Kit
 //
@@ -8,9 +8,8 @@
 //        AUTHOR:  Wenping Guo <ybyygu@gmail.com>
 //       LICENCE:  GPL version 2 or upper
 //       CREATED:  <2018-06-14 Thu 20:52>
-//       UPDATED:  <2022-06-14 Tue 10:56>
 //===============================================================================#
-// header:1 ends here
+// 54047155 ends here
 
 // [[file:../spdkit.note::3ac79127][3ac79127]]
 use gut::prelude::*;
@@ -177,6 +176,7 @@ pub mod termination;
 mod annealing;
 mod fingerprint;
 mod graph6;
+mod similarity;
 mod vars;
 // 1e9e2348 ends here
 
@@ -193,6 +193,7 @@ pub mod prelude {
 
     pub use crate::encoding::Mutate;
     pub use crate::fingerprint::FingerPrintExt;
+    pub use crate::similarity::SimilarityExt;
 }
 // 4ccc7fd1 ends here
 
