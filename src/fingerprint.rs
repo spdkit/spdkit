@@ -99,15 +99,28 @@ pub trait FingerPrintExt {
     fn fingerprint(&self) -> String;
     fn reorder_cannonically(&mut self) -> (Vec<usize>, Vec<usize>);
     fn resemble_rigidly(&mut self, _: &Molecule) -> Result<f64>;
+    fn to_graph6(&self) -> String;
 }
 
 impl FingerPrintExt for Molecule {
-    /// Return unique fingerprint of current molecule
+    /// Return a unique fingerprint of current molecule based on its bond
+    /// graph. This operation internally call `reorder_cannonically` method.
     fn fingerprint(&self) -> String {
         let mut mol = self.clone();
         reorder_atoms_canonically(&mut mol);
         let fp = crate::graph6::encode_molecule_as_graph6(&mol);
         gut::utils::hash_code(&fp)
+    }
+
+    /// Write molecule graph in human-readable graph6 format.
+    ///
+    /// # NOTE
+    /// * The graph6 output is dependent on the atom numbering. To make it
+    ///   irrelevant to atom numbering, you can use the `reorder_cannonically`
+    ///   method.
+    fn to_graph6(&self) -> String {
+        let fp = crate::graph6::encode_molecule_as_graph6(self);
+        format!(">>graph6<<{fp}\n")
     }
 
     /// This is an operation of reordering the atoms in a way that

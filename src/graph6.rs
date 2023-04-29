@@ -149,7 +149,7 @@ pub fn encode_molecule_as_graph6(mol: &Molecule) -> String {
 }
 // cccb03f9 ends here
 
-// [[file:../spdkit.note::*test][test:1]]
+// [[file:../spdkit.note::651a1baa][651a1baa]]
 #[test]
 fn test_encode_molecule_as_graph6() -> Result<()> {
     use gchemol::prelude::*;
@@ -160,4 +160,4 @@ fn test_encode_molecule_as_graph6() -> Result<()> {
 
     Ok(())
 }
-// test:1 ends here
+// 651a1baa ends here
