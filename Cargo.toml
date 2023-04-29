@@ -7,7 +7,9 @@ authors = ["Wenping Guo <ybyygu@gmail.com>"]
 description = "spdkit: Structure Predication Development Kit"
 homepage = "https://github.com/spdkit/spdkit"
 repository = "https://github.com/spdkit/spdkit"
+keywords = ["structure-prediction", "computational-chemistry", "molecule"]
 license = "GPL-3.0"
+categories = ["science"]
 exclude = ["images/*", "docs/*", "ltxpng/*", "data/*"]
 
 [dependencies]
