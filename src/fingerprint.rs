@@ -93,6 +93,41 @@ fn reorder_atoms_canonically(mol: &mut Molecule) -> (Vec<usize>, Vec<usize>) {
 }
 // edecb43c ends here
 
+// [[file:../spdkit.note::e412a576][e412a576]]
+/// Encode molecule a list of numbers based on its atom kinds, bond
+/// graph, and bond kinds.
+fn encode_atoms_and_bonds(mol: &Molecule) -> Vec<usize> {
+    let bonds = encode_bonds(mol);
+    mol.atomic_numbers().chain(bonds).collect()
+}
+
+fn encode_bonds(mol: &Molecule) -> impl Iterator<Item = usize> {
+    use gchemol::BondKind;
+
+    let mut bonds: Vec<_> = mol
+        .bonds()
+        .map(|(u, v, bond)| {
+            let o = match bond.kind() {
+                BondKind::Dummy => 0,
+                BondKind::Partial => 1,
+                BondKind::Single => 2,
+                BondKind::Aromatic => 3,
+                BondKind::Double => 4,
+                BondKind::Triple => 5,
+                BondKind::Quadruple => 6,
+            };
+            if u > v {
+                [u, v, o]
+            } else {
+                [v, u, o]
+            }
+        })
+        .collect();
+    bonds.sort();
+    bonds.into_iter().flatten()
+}
+// e412a576 ends here
+
 // [[file:../spdkit.note::3d0c2d80][3d0c2d80]]
 /// Extension trait providing fingerprint method
 pub trait FingerPrintExt {
@@ -104,20 +139,24 @@ pub trait FingerPrintExt {
 
 impl FingerPrintExt for Molecule {
     /// Return a unique fingerprint of current molecule based on its bond
-    /// graph. This operation internally call `reorder_cannonically` method.
+    /// graph. This fingerprint is independent of its 3d geometry or atom
+    /// numbering.
+    ///
+    /// # NOTE
+    ///   * This operation internally call `reorder_cannonically` method.
     fn fingerprint(&self) -> String {
         let mut mol = self.clone();
         reorder_atoms_canonically(&mut mol);
-        let fp = crate::graph6::encode_molecule_as_graph6(&mol);
+        let fp = encode_atoms_and_bonds(&mol);
         gut::utils::hash_code(&fp)
     }
 
     /// Write molecule graph in human-readable graph6 format.
     ///
     /// # NOTE
-    /// * The graph6 output is dependent on the atom numbering. To make it
-    ///   irrelevant to atom numbering, you can use the `reorder_cannonically`
-    ///   method.
+    /// * The graph6 output is independent of atom elements and dependent on
+    ///   the atom numbering. To make it irrelevant to atom numbering, you
+    ///   can use the `reorder_cannonically` method.
     fn to_graph6(&self) -> String {
         let fp = crate::graph6::encode_molecule_as_graph6(self);
         format!(">>graph6<<{fp}\n")
@@ -151,14 +190,26 @@ impl FingerPrintExt for Molecule {
 // 3d0c2d80 ends here
 
 // [[file:../spdkit.note::fb3d7a90][fb3d7a90]]
+#[track_caller]
 #[test]
 fn test_molecule_fingerprint() -> Result<()> {
+    // molecule fingerprint is irrelevant to its 3d geometry or atom numbering
     let mol1 = Molecule::from_file("./tests/files/H2O-rotated.mol2")?;
     let fp1 = mol1.fingerprint();
-
     let mol2 = Molecule::from_file("./tests/files/H2O-reordered.mol2")?;
     let fp2 = mol2.fingerprint();
     assert_eq!(fp1, fp2);
+    let mut mol3 = mol2.clone();
+    // when element changes, the fingerprint is different
+    let a1 = mol3.get_atom_unchecked_mut(1);
+    a1.set_symbol("C");
+    let fp3 = mol3.fingerprint();
+    assert!(fp1 != fp3);
+    // when bond kind changes, the fingerprint is different
+    let b13 = mol3.get_bond_mut(1, 3).unwrap();
+    b13.set_kind(gchemol::BondKind::Double);
+    let fp4 = mol3.fingerprint();
+    assert!(fp3 != fp4);
 
     let mut mol1_ = mol1.clone();
     let mut mol2_ = mol2.clone();
